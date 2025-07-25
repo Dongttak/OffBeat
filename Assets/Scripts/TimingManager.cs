@@ -27,11 +27,13 @@ public class TimingManager : MonoBehaviour
         if (!instance)
         {
             instance = this;
+            DontDestroyOnLoad(instance);
         }
         else
         {
             Destroy(instance);
             instance = this;
+            DontDestroyOnLoad(instance);
         }
     }
     void Start()

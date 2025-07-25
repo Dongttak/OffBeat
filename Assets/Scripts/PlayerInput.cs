@@ -4,13 +4,15 @@ using Unity.VisualScripting;
 using UnityEngine;
 using DG.Tweening;
 using static UnityEngine.GraphicsBuffer;
+using System;
 
 public class PlayerInput : MonoBehaviour
 {
     private int posIndex = 1;
     public List<Transform> positions;
+    public static event Action Attack;
+    private bool isAttack;
 
-    // Update is called once per frame
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.A))
@@ -33,7 +35,7 @@ public class PlayerInput : MonoBehaviour
         {
             if (TimingManager.instance.IsOntheBeat())
             {
-                BulletManager.instance.Attack();
+                Attack?.Invoke();
             }
         }
         if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -44,5 +46,4 @@ public class PlayerInput : MonoBehaviour
             }
         }
     }
-
 }
