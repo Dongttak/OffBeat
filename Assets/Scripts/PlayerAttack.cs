@@ -26,11 +26,11 @@ public class PlayerAttack : MonoBehaviour
     void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
-        Gizmos.DrawRay(firePosition.position, transform.forward * 15f);
+        Gizmos.DrawRay(firePosition.position, transform.forward * 30);
     }
     private void Attack()
     {
-        if (Physics.Raycast(firePosition.position, Vector3.forward, out hit, 15f))
+        if (Physics.Raycast(firePosition.position, Vector3.forward, out hit, 30f))
         {
             if (hit.transform.CompareTag("Enemy"))
             {
