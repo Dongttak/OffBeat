@@ -1,9 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using DG.Tweening;
-using static UnityEngine.GraphicsBuffer;
 using System;
 
 public class PlayerInput : MonoBehaviour
@@ -12,38 +10,40 @@ public class PlayerInput : MonoBehaviour
     public List<Transform> positions;
     public static event Action Attack;
     private bool isAttack;
-
+    
     void Update()
-    {
+    { 
+        // 왼쪽 이동
         if (Input.GetKeyDown(KeyCode.A))
         {
-            if (posIndex > 0)
-                if (TimingManager.instance.IsOntheBeat())
-                {
-                    transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-                }
+            if (posIndex > 0 && BeatManager.Instance.IsOnBeatNow())
+            {
+                transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
+                Debug.Log("Move Left");
+            }
         }
+
+        // 오른쪽 이동
         if (Input.GetKeyDown(KeyCode.D))
         {
-            if (posIndex < 2)
-                if (TimingManager.instance.IsOntheBeat())
-                {
-                    transform.DOMove(positions[++posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-                }
-        }
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (TimingManager.instance.IsOntheBeat())
+            if (posIndex < 2 && BeatManager.Instance.IsOnBeatNow())
             {
-                Attack?.Invoke();
+                transform.DOMove(positions[++posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
+                Debug.Log("Move Right");
             }
         }
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+
+        // 공격
+        if (Input.GetKeyDown(KeyCode.Space) && BeatManager.Instance.IsOnBeatNow())
         {
-            if (TimingManager.instance.IsOntheBeat())
-            {
-                Debug.Log("Evade");
-            }
+            Attack?.Invoke();
+            Debug.Log("Attack Triggered");
+        }
+
+        // 회피
+        if (Input.GetKeyDown(KeyCode.LeftShift) && BeatManager.Instance.IsOnBeatNow())
+        {
+            Debug.Log("Evade Triggered");
         }
     }
 }

@@ -13,7 +13,7 @@ public class BeatManager : MonoBehaviour
     [SerializeField] private GameObject obj;
 
     private float intervalDuration;
-    private float hitRange;
+    private float hitRange; 
 
     private List<float> OnBeatList = new List<float>();
     private int index_OnBeatList = 0;
@@ -22,6 +22,44 @@ public class BeatManager : MonoBehaviour
     [HideInInspector] public List<float> OffBeatList = new List<float>();
     private int index_OffBeatList = 0;
     private int lastCheckedIndex_OffBeatList;
+
+    public static BeatManager Instance;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+    }
+    public bool IsOnBeatNow()
+    {
+        float currTime = audioSource.time;
+
+        foreach (float beatTime in OnBeatList)
+        {
+            if (Mathf.Abs(currTime - beatTime) <= hitRange)
+                return true;
+            if (beatTime > currTime + hitRange)
+                break; // 박자 범위를 지나쳤으면 중단
+        }
+
+        return false;
+    }
+
+    public bool IsOffBeatNow()
+    {
+        float currTime = audioSource.time;
+
+        foreach (float beatTime in OffBeatList)
+        {
+            if (Mathf.Abs(currTime - beatTime) <= hitRange)
+                return true;
+            if (beatTime > currTime + hitRange)
+                break;
+        }
+
+        return false;
+    }
+
+
 
     private void Start()
     {
@@ -179,4 +217,6 @@ public class BeatState : MonoBehaviour
         get { return _currBeatState; }
         set { _currBeatState = value; }
     }
+
 }
+
