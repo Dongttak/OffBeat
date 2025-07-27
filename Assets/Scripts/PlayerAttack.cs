@@ -6,12 +6,12 @@ using UnityEngine;
 public class PlayerAttack : MonoBehaviour
 {
     private RaycastHit hit;
-    public Transform firePosition;
-    private bool attackRequired = false;
+    public Transform firePosition; // 총구 위치
+    private bool attackRequired = false; // 공격이 입력되었는지 확인하는 변수
     
     void Awake()
     {
-        PlayerInput.Attack += () => attackRequired = true;
+        PlayerInput.AttackEvent += () => attackRequired = true;
     }
 
     private void LateUpdate()

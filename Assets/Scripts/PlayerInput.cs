@@ -6,10 +6,9 @@ using System;
 
 public class PlayerInput : MonoBehaviour
 {
-    private int posIndex = 1;
-    public List<Transform> positions;
-    public static event Action Attack;
-    private bool isAttack;
+    private int posIndex = 1; // 현재 위치 인덱스 0(왼쪽), 1(가운데), 2(오른쪽)
+    public List<Transform> positions; // 라인(플레이어가 이동할 위치) 담을 리스트
+    public static event Action AttackEvent; // 공격시 발동하는 이벤트
     
     void Update()
     { 
@@ -18,7 +17,8 @@ public class PlayerInput : MonoBehaviour
         {
             if (posIndex > 0 && BeatManager.Instance.IsOnBeatNow())
             {
-                transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
+                transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad); // DOTween 에셋 내장 함수
+                       // DOMove(목표 위치, 이동까지 걸리는 시간).SetEase(...)
                 Debug.Log("Move Left");
             }
         }
@@ -36,7 +36,7 @@ public class PlayerInput : MonoBehaviour
         // 공격
         if (Input.GetKeyDown(KeyCode.Space) && BeatManager.Instance.IsOnBeatNow())
         {
-            Attack?.Invoke();
+            AttackEvent?.Invoke();
             Debug.Log("Attack Triggered");
         }
 
