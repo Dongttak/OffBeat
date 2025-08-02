@@ -19,8 +19,7 @@ public class PlayerInput : MonoBehaviour
         {
             if (posIndex > 0 && BeatManager.Instance.IsOnBeatNow())
             {
-                transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad); // DOTween 에셋 내장 함수
-                       // DOMove(목표 위치, 이동까지 걸리는 시간).SetEase(...)
+                transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
                 Debug.Log("Move Left");
                 if (posIndex == 1)
                 {

@@ -1,47 +1,43 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class HandleCounter : MonoBehaviour
 {
-    public BeatManager BeatManager;
+    [SerializeField] private GameObject counterUI;
 
-    public GameObject Counter;
-
-    void Start()
+    private void Start()
     {
-        Counter.GetComponent<GameObject>().SetActive(false);
-
+        counterUI.SetActive(false);
         StartCoroutine(SpawnCounterRoutine());
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)
-            && BeatState.Instance.CurrBeatState == BeatState.BeatType.OffBeat)
+        // 괄호로 조건 명확히
+        if ((Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)) &&
+            BeatState.Instance.CurrBeatState == BeatState.BeatType.OffBeat)
         {
-            Counter.GetComponent<GameObject>().SetActive(false);
+            counterUI.SetActive(false);
         }
     }
 
-    IEnumerator SpawnCounterRoutine()
+    private IEnumerator SpawnCounterRoutine()
     {
         yield return new WaitForSeconds(2.0f);
-        Counter.GetComponent<GameObject>().SetActive(true);
+        ActivateCounter();
 
-        yield return new WaitForSeconds(4.0f);
-        Counter.GetComponent<GameObject>().SetActive(true);
-
-        yield return new WaitForSeconds(4.0f);
-        Counter.GetComponent<GameObject>().SetActive(true);
-
-        yield return new WaitForSeconds(4.0f);
-        Counter.GetComponent<GameObject>().SetActive(true);
-
-        yield return new WaitForSeconds(4.0f);
-        Counter.GetComponent<GameObject>().SetActive(true);
-
+        for (int i = 0; i < 4; i++)
+        {
+            yield return new WaitForSeconds(4.0f);
+            ActivateCounter();
+        }
     }
 
+    private void ActivateCounter()
+    {
+        // 필요한 경우 리셋이나 애니메이션도 추가 가능
+        counterUI.SetActive(true);
+        Debug.Log("카운터 UI 활성화");
+    }
 }
