@@ -15,7 +15,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 638897465159897431
+  lastModified: 638898792063244700
   FileSizes:
   - Name: 
     Value: 802
@@ -35,7 +35,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 638897465159867116
+  lastModified: 638898792063244700
   FileSizes: []
   Exists: 1
 --- !u!114 &11400000
@@ -61,7 +61,7 @@ MonoBehaviour:
   StringsBanks:
   - {fileID: -8730731478114659671}
   cacheVersion: 131848
-  cacheTime: 638897465159897431
+  cacheTime: 638898792063244700
   SerializableEventsDict:
   - key: event:/563651__johnnie_holiday__synthwave-120bpm
     index: 0

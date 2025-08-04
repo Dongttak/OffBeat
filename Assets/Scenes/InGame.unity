@@ -978,7 +978,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &897990573
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1312,7 +1312,7 @@ MonoBehaviour:
       Data3: -900520568
       Data4: -1268513552
     Path: event:/563651__johnnie_holiday__synthwave-120bpm
-  targetObject: {fileID: 0}
+  targetObject: {fileID: 1104629436}
 --- !u!4 &1096053159
 Transform:
   m_ObjectHideFlags: 0
@@ -1378,7 +1378,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1104629437
 MonoBehaviour:
   m_ObjectHideFlags: 0

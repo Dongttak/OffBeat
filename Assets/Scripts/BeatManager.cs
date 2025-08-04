@@ -70,7 +70,7 @@ public class BeatManager : MonoBehaviour
     {
         if (!isInitialized) return;
 
-        if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.LeftShift))
         {
             float currentTime = GetFMODTimelineSeconds();
 
@@ -100,6 +100,7 @@ public class BeatManager : MonoBehaviour
             if (beatTime < currTime - hitRange)
             {
                 lastCheckedIndex_OnBeatList = i + 1;
+                BeatState.Instance.CurrBeatState = BeatState.BeatType.Miss;
                 continue;
             }
 
@@ -113,7 +114,8 @@ public class BeatManager : MonoBehaviour
             {
                 Debug.Log("정박 실패!");
                 BeatState.Instance.CurrBeatState = BeatState.BeatType.Miss;
-                return;
+                continue;
+                //return;
             }
         }
 
@@ -125,6 +127,7 @@ public class BeatManager : MonoBehaviour
             if (beatTime < currTime - hitRange)
             {
                 lastCheckedIndex_OffBeatList = i + 1;
+                BeatState.Instance.CurrBeatState = BeatState.BeatType.Miss;
                 continue;
             }
 
@@ -159,6 +162,7 @@ public class BeatManager : MonoBehaviour
         BeatState.Instance.CurrBeatState = BeatState.BeatType.OffBeat;
         Debug.Log("엇박 성공!");
     }
+
     //현재 어떤 상황인지 다른 곳으로 알려주기 위한 함수들
     public bool IsOnBeatNow()
     {

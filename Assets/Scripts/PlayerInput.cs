@@ -13,11 +13,13 @@ public class PlayerInput : MonoBehaviour
     public List<Transform> gunPositions;
 
     void Update()
-    { 
+    {
         // 왼쪽 이동
         if (Input.GetKeyDown(KeyCode.A))
         {
-            if (posIndex > 0 && BeatManager.Instance.IsOnBeatNow())
+            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
+
+            if (posIndex > 0 && (currentBeat == BeatState.BeatType.OnBeat))
             {
                 transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
                 Debug.Log("Move Left");
@@ -25,17 +27,18 @@ public class PlayerInput : MonoBehaviour
                 {
                     gun.transform.position = gunPositions[1].position;
                 }
-
             }
         }
 
         // 오른쪽 이동
         if (Input.GetKeyDown(KeyCode.D))
         {
-            if (posIndex < 2 && BeatManager.Instance.IsOnBeatNow())
+            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
+
+            if (posIndex < 2 && (currentBeat == BeatState.BeatType.OnBeat))
             {
                 transform.DOMove(positions[++posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-                Debug.Log("Move Right"); 
+                Debug.Log("Move Right");
                 if (posIndex == 2)
                 {
                     gun.transform.position = gunPositions[0].position;
@@ -44,16 +47,69 @@ public class PlayerInput : MonoBehaviour
         }
 
         // 공격
-        if (Input.GetKeyDown(KeyCode.Space) && BeatManager.Instance.IsOnBeatNow())
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            AttackEvent?.Invoke();
-            Debug.Log("Attack Triggered");
+            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
+
+            if(currentBeat == BeatState.BeatType.OnBeat)
+            {
+                AttackEvent?.Invoke();
+                Debug.Log("Attack Triggered");
+            }
+
         }
 
         // 회피
-        if (Input.GetKeyDown(KeyCode.LeftShift) && BeatManager.Instance.IsOnBeatNow())
+        if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            Debug.Log("Evade Triggered");
+            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
+
+            if (currentBeat == BeatState.BeatType.OnBeat)
+            {
+                Debug.Log("Evade Triggered");
+            }
         }
+
+        //// 왼쪽 이동
+        //if (Input.GetKeyDown(KeyCode.A))
+        //{
+        //    if (posIndex > 0 && BeatManager.Instance.IsOnBeatNow())
+        //    {
+        //        transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
+        //        Debug.Log("Move Left");
+        //        if (posIndex == 1)
+        //        {
+        //            gun.transform.position = gunPositions[1].position;
+        //        }
+
+        //    }
+        //}
+
+        //// 오른쪽 이동
+        //if (Input.GetKeyDown(KeyCode.D))
+        //{
+        //    if (posIndex < 2 && BeatManager.Instance.IsOnBeatNow())
+        //    {
+        //        transform.DOMove(positions[++posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
+        //        Debug.Log("Move Right"); 
+        //        if (posIndex == 2)
+        //        {
+        //            gun.transform.position = gunPositions[0].position;
+        //        }
+        //    }
+        //}
+
+        //// 공격
+        //if (Input.GetKeyDown(KeyCode.Space) && BeatManager.Instance.IsOnBeatNow())
+        //{
+        //    AttackEvent?.Invoke();
+        //    Debug.Log("Attack Triggered");
+        //}
+
+        //// 회피
+        //if (Input.GetKeyDown(KeyCode.LeftShift) && BeatManager.Instance.IsOnBeatNow())
+        //{
+        //    Debug.Log("Evade Triggered");
+        //}
     }
 }
