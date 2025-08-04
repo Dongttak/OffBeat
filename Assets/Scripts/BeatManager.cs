@@ -42,7 +42,7 @@ public class BeatManager : MonoBehaviour
     void InitAndStartFMOD()
     {
         intervalDuration = 60f / (bpm * steps);
-        hitRange = intervalDuration * 0.25f;
+        hitRange = intervalDuration * 0.30f;
 
         // 비트 리스트 생성
         OnBeatList.Clear();
@@ -90,7 +90,7 @@ public class BeatManager : MonoBehaviour
         return 0f;
     }
 
-    private void CheckBeat(float currTime)
+    /*private void CheckBeat(float currTime)
     {
         // 정박 판정
         for (int i = lastCheckedIndex_OnBeatList; i < OnBeatList.Count; i++)
@@ -145,6 +145,38 @@ public class BeatManager : MonoBehaviour
             }
         }
     }
+    */
+    private void CheckBeat(float currTime)
+    {
+        // 정박 판정
+        foreach (float beatTime in OnBeatList)
+        {
+            if (Mathf.Abs(currTime - beatTime) <= hitRange)
+            {
+                OnBeat();
+                return; 
+            }
+        }
+
+        // 엇박 판정
+        foreach (float beatTime in OffBeatList)
+        {
+            if (Mathf.Abs(currTime - beatTime) <= hitRange)
+            {
+                OffBeat();
+                return;
+            }
+        }
+
+        // 둘 다 실패
+        Debug.Log("정박/엇박 실패!");
+        if (BeatState.Instance.CurrBeatState != BeatState.BeatType.OnBeat &&
+            BeatState.Instance.CurrBeatState != BeatState.BeatType.OffBeat)
+        {
+            BeatState.Instance.CurrBeatState = BeatState.BeatType.Miss;
+        }
+    }
+
 
     private void OnBeat()
     {
