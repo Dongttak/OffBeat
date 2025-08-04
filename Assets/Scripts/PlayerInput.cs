@@ -25,7 +25,7 @@ public class PlayerInput : MonoBehaviour
                 Debug.Log("Move Left");
                 if (posIndex == 1)
                 {
-                    gun.transform.position = gunPositions[1].position;
+                    //gun.transform.position = gunPositions[1].position;
                 }
             }
         }
@@ -41,7 +41,7 @@ public class PlayerInput : MonoBehaviour
                 Debug.Log("Move Right");
                 if (posIndex == 2)
                 {
-                    gun.transform.position = gunPositions[0].position;
+                    //gun.transform.position = gunPositions[0].position;
                 }
             }
         }

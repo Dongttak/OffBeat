@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8730731478114659671
+--- !u!114 &-7509822755275324708
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -15,12 +15,12 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 638898792063244700
+  lastModified: 638899114339643926
   FileSizes:
   - Name: 
     Value: 802
   Exists: 1
---- !u!114 &-7581859877106993079
+--- !u!114 &-5155570038407054256
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -30,13 +30,114 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
-  m_Name: bank:/Master.bank
+  m_Name: bank:/BGM.bank
   m_EditorClassIdentifier: 
-  Path: Assets/StreamingAssets/Build/Desktop/Master.bank
-  Name: Master
-  StudioPath: bank:/Master
-  lastModified: 638898792063244700
+  Path: Assets/StreamingAssets/Build/Desktop/BGM.bank
+  Name: BGM
+  StudioPath: 
+  lastModified: 638896771937471413
   FileSizes: []
+  Exists: 1
+--- !u!114 &-3560463955354630759
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Music_UsingMarker
+  m_EditorClassIdentifier: 
+  Path: event:/Music_UsingMarker
+  Guid:
+    Data1: 2018620591
+    Data2: 1159932937
+    Data3: 2089080198
+    Data4: -462255710
+  Banks:
+  - {fileID: 7599808394188457560}
+  IsStream: 1
+  Is3D: 0
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 40000
+--- !u!114 &-3527655030585618478
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/test01
+  m_EditorClassIdentifier: 
+  Path: event:/test01
+  Guid:
+    Data1: 72592179
+    Data2: 1262924321
+    Data3: 896832928
+    Data4: -1180889031
+  Banks:
+  - {fileID: 7599808394188457560}
+  IsStream: 0
+  Is3D: 0
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
+--- !u!114 &-1082057284536848318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Music_oneTempo
+  m_EditorClassIdentifier: 
+  Path: event:/Music_oneTempo
+  Guid:
+    Data1: -457861438
+    Data2: 1080772104
+    Data3: -1958469233
+    Data4: 1433621641
+  Banks:
+  - {fileID: 4544294689389983391}
+  IsStream: 1
+  Is3D: 0
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 40026
+--- !u!114 &-335860220921755966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Master.strings.bank
+  m_EditorClassIdentifier: 
+  Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/Master.strings.bank
+  Name: Master.strings
+  StudioPath: bank:/Master.strings
+  lastModified: 638899654180495494
+  FileSizes:
+  - Name: Desktop
+    Value: 960
   Exists: 1
 --- !u!114 &11400000
 MonoBehaviour:
@@ -51,21 +152,49 @@ MonoBehaviour:
   m_Name: FMODStudioCache
   m_EditorClassIdentifier: 
   EditorBanks:
-  - {fileID: -7581859877106993079}
-  - {fileID: -8730731478114659671}
+  - {fileID: -335860220921755966}
+  - {fileID: 7599808394188457560}
+  - {fileID: 5926802134928546167}
+  - {fileID: 5221220266052709710}
   EditorEvents:
-  - {fileID: 4767642289630646057}
+  - {fileID: -3527655030585618478}
+  - {fileID: -3560463955354630759}
+  - {fileID: 5994276617636745209}
   EditorParameters: []
   MasterBanks:
-  - {fileID: -7581859877106993079}
+  - {fileID: 5926802134928546167}
   StringsBanks:
-  - {fileID: -8730731478114659671}
+  - {fileID: -335860220921755966}
   cacheVersion: 131848
-  cacheTime: 638898792063244700
+  cacheTime: 638899654180555507
   SerializableEventsDict:
-  - key: event:/563651__johnnie_holiday__synthwave-120bpm
+  - key: event:/test01
     index: 0
---- !u!114 &4767642289630646057
+  - key: event:/Music_UsingMarker
+    index: 1
+  - key: event:/Music_oneTempo
+    index: 2
+--- !u!114 &1146352819935921218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Build/Desktop/Master.bank
+  m_EditorClassIdentifier: 
+  Path: C:/Users/parkhojun/Desktop/120bpmJudgeTest/Build/Desktop/Master.bank
+  Name: Build/Desktop/Master
+  StudioPath: bank:/Master
+  lastModified: 638896750656460123
+  FileSizes:
+  - Name: 
+    Value: 1074
+  Exists: 0
+--- !u!114 &2624590486668324780
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -75,20 +204,147 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
-  m_Name: event:/563651__johnnie_holiday__synthwave-120bpm
+  m_Name: event:/Music_UsingMarker
   m_EditorClassIdentifier: 
-  Path: event:/563651__johnnie_holiday__synthwave-120bpm
+  Path: event:/Music_UsingMarker
   Guid:
-    Data1: -2073352202
-    Data2: 1170651507
-    Data3: -900520568
-    Data4: -1268513552
+    Data1: 2018620591
+    Data2: 1159932937
+    Data3: 2089080198
+    Data4: -462255710
   Banks:
-  - {fileID: -7581859877106993079}
+  - {fileID: 4544294689389983391}
   IsStream: 1
   Is3D: 0
-  IsOneShot: 1
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 40000
+--- !u!114 &4544294689389983391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Build/Desktop/BGM.bank
+  m_EditorClassIdentifier: 
+  Path: C:/Users/parkhojun/Desktop/120bpmJudgeTest/Build/Desktop/BGM.bank
+  Name: Build/Desktop/BGM
+  StudioPath: bank:/BGM
+  lastModified: 638896771937471413
+  FileSizes:
+  - Name: 
+    Value: 512416
+  Exists: 0
+--- !u!114 &5221220266052709710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/test.bank
+  m_EditorClassIdentifier: 
+  Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/test.bank
+  Name: test
+  StudioPath: bank:/test
+  lastModified: 638899654180555507
+  FileSizes:
+  - Name: Desktop
+    Value: 506
+  Exists: 1
+--- !u!114 &5926802134928546167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Master.bank
+  m_EditorClassIdentifier: 
+  Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/Master.bank
+  Name: Master
+  StudioPath: bank:/Master
+  lastModified: 638899654180475488
+  FileSizes:
+  - Name: Desktop
+    Value: 1074
+  Exists: 1
+--- !u!114 &5994276617636745209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Music_oneTempo
+  m_EditorClassIdentifier: 
+  Path: event:/Music_oneTempo
+  Guid:
+    Data1: -457861438
+    Data2: 1080772104
+    Data3: -1958469233
+    Data4: 1433621641
+  Banks:
+  - {fileID: 7599808394188457560}
+  IsStream: 1
+  Is3D: 0
+  IsOneShot: 0
   Parameters: []
   MinDistance: 1
   MaxDistance: 20
   Length: 40026
+--- !u!114 &7599808394188457560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/BGM.bank
+  m_EditorClassIdentifier: 
+  Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/BGM.bank
+  Name: BGM
+  StudioPath: bank:/BGM
+  lastModified: 638899653778871880
+  FileSizes:
+  - Name: Desktop
+    Value: 512896
+  Exists: 1
+--- !u!114 &9193261868299228122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Build/Desktop/Master.strings.bank
+  m_EditorClassIdentifier: 
+  Path: C:/Users/parkhojun/Desktop/120bpmJudgeTest/Build/Desktop/Master.strings.bank
+  Name: Build/Desktop/Master.strings
+  StudioPath: bank:/Master.strings
+  lastModified: 638896750656480141
+  FileSizes:
+  - Name: 
+    Value: 876
+  Exists: 0
