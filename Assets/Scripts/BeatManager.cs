@@ -54,13 +54,13 @@ public class BeatManager : MonoBehaviour
     }
 
     [SerializeField] private List<GameObject> pulseToBeatObjects = new List<GameObject>();
-    private static List<GameObject> _pulseToBeatObjects = new List<GameObject>();
+    //private static List<GameObject> _pulseToBeatObjects = new List<GameObject>();
 
     // --------------------- 기존 코드
     private List<float> OnBeatList = new List<float>();
     private List<float> OffBeatList = new List<float>();
-    private int lastCheckedIndex_OnBeatList = 0;
-    private int lastCheckedIndex_OffBeatList = 0;
+    //private int lastCheckedIndex_OnBeatList = 0;
+    //private int lastCheckedIndex_OffBeatList = 0;
 
     private float songLength = 180f;
     private bool isInitialized = false;
@@ -93,10 +93,10 @@ public class BeatManager : MonoBehaviour
         hitRangeMs = Mathf.RoundToInt(hitRange_s * 1000f);
 
         // 콜백 설정
-        //beatCallback = new EVENT_CALLBACK(TimelineCallback);
+        beatCallback = new EVENT_CALLBACK(TimelineCallback);
 
         // BEAT 타입 콜백
-        //musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
+        musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
 
         // 전체 타임라인에 대해 판정 구간을 미리 생성
         // TODO: start에서 작성된 내용이므로, 이후에 music이 바뀌는 상황이 생기면 코드 변경 필요
@@ -116,33 +116,33 @@ public class BeatManager : MonoBehaviour
 
         // 리스트 초기화
         //_pulseToBeatObjects.Clear(); // 혹시 모를 데이터를 초기화
-        _pulseToBeatObjects.AddRange(pulseToBeatObjects);
+        //_pulseToBeatObjects.AddRange(pulseToBeatObjects);
 
         // 음악 재생
         musicInstance.start();
 
         ///// ----------------------- 기존 코드
-        intervalDuration = 60f / (bpm * stepsPerBeat);
-        hitRange = intervalDuration * 0.25f;
+        //intervalDuration = 60f / (bpm * stepsPerBeat);
+        //hitRange = intervalDuration * 0.25f;
 
         // 비트 리스트 생성
-        OnBeatList.Clear();
-        OffBeatList.Clear();
-        lastCheckedIndex_OnBeatList = 0;
-        lastCheckedIndex_OffBeatList = 0;
+        //OnBeatList.Clear();
+        //OffBeatList.Clear();
+        //lastCheckedIndex_OnBeatList = 0;
+        //lastCheckedIndex_OffBeatList = 0;
 
-        for (float t = 0f; t <= songLength; t += intervalDuration)
-        {
-            OnBeatList.Add(t);
-        }
+        //for (float t = 0f; t <= songLength; t += intervalDuration)
+        //{
+        //    OnBeatList.Add(t);
+        //}
 
-        for (float t = intervalDuration / 2f; t <= songLength; t += intervalDuration)
-        {
-            OffBeatList.Add(t);
-        }
+        //for (float t = intervalDuration / 2f; t <= songLength; t += intervalDuration)
+        //{
+        //    OffBeatList.Add(t);
+        //}
 
-        musicInstance = RuntimeManager.CreateInstance(musicEventPath);
-        musicInstance.start();
+        //musicInstance = RuntimeManager.CreateInstance(musicEventPath);
+        //musicInstance.start();
 
         isInitialized = true;
     }
@@ -299,22 +299,22 @@ public class BeatManager : MonoBehaviour
 
     // 타임라인 비트 콜백 - 박자 판정
     //[AOT.MonoPInvokeCallback(typeof(EVENT_CALLBACK))]
-    //static FMOD.RESULT TimelineCallback(EVENT_CALLBACK_TYPE type, System.IntPtr instancePtr, System.IntPtr parameterPtr)
-    //{
-    //    if (type == EVENT_CALLBACK_TYPE.TIMELINE_BEAT)
-    //    {
-
-    //        foreach (GameObject obj in _pulseToBeatObjects)
-    //        {
-    //            obj.GetComponent<PulseToBeat>().Pulse();
-    //        }
-    //    }
-    //    return FMOD.RESULT.OK;
-    //}
+    FMOD.RESULT TimelineCallback(EVENT_CALLBACK_TYPE type, System.IntPtr instancePtr, System.IntPtr parameterPtr)
+    {
+        if (type == EVENT_CALLBACK_TYPE.TIMELINE_BEAT)
+        {
+            foreach (GameObject obj in pulseToBeatObjects)
+            {
+                obj.GetComponent<PulseToBeat>().Pulse();
+            }
+        }
+        return FMOD.RESULT.OK;
+    }
 
     private void OnDestroy()
     {
         musicInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
         musicInstance.release();
+        musicInstance.setCallback(null);
     }
 }
