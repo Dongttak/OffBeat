@@ -1,5 +1,23 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8320765547206785064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Master.bank
+  m_EditorClassIdentifier: 
+  Path: Assets/StreamingAssets/Build/Desktop/Master.bank
+  Name: Master
+  StudioPath: bank:/Master
+  lastModified: 638903000233524681
+  FileSizes: []
+  Exists: 1
 --- !u!114 &-7509822755275324708
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19,6 +37,73 @@ MonoBehaviour:
   FileSizes:
   - Name: 
     Value: 802
+  Exists: 1
+--- !u!114 &-7128390665034185479
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Music_UsingMarker
+  m_EditorClassIdentifier: 
+  Path: event:/Music_UsingMarker
+  Guid:
+    Data1: 2018620591
+    Data2: 1159932937
+    Data3: 2089080198
+    Data4: -462255710
+  Banks:
+  - {fileID: -8320765547206785064}
+  IsStream: 1
+  Is3D: 0
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 40000
+--- !u!114 &-6924027539058152247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Master.strings.bank
+  m_EditorClassIdentifier: 
+  Path: Assets/StreamingAssets/Build/Desktop/Master.strings.bank
+  Name: Master.strings
+  StudioPath: bank:/Master.strings
+  lastModified: 638903000233534683
+  FileSizes:
+  - Name: 
+    Value: 830
+  Exists: 1
+--- !u!114 &-5920551816022739396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Master.strings.bank
+  m_EditorClassIdentifier: 
+  Path: Assets/StreamingAssets/Build/Desktop/Master.strings.bank
+  Name: Master.strings
+  StudioPath: bank:/Master.strings
+  lastModified: 638902900649068786
+  FileSizes:
+  - Name: 
+    Value: 830
   Exists: 1
 --- !u!114 &-5155570038407054256
 MonoBehaviour:
@@ -57,7 +142,7 @@ MonoBehaviour:
     Data3: 2089080198
     Data4: -462255710
   Banks:
-  - {fileID: 7599808394188457560}
+  - {fileID: -681488214983271076}
   IsStream: 1
   Is3D: 0
   IsOneShot: 0
@@ -65,33 +150,6 @@ MonoBehaviour:
   MinDistance: 1
   MaxDistance: 20
   Length: 40000
---- !u!114 &-3527655030585618478
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
-  m_Name: event:/test01
-  m_EditorClassIdentifier: 
-  Path: event:/test01
-  Guid:
-    Data1: 72592179
-    Data2: 1262924321
-    Data3: 896832928
-    Data4: -1180889031
-  Banks:
-  - {fileID: 7599808394188457560}
-  IsStream: 0
-  Is3D: 0
-  IsOneShot: 1
-  Parameters: []
-  MinDistance: 1
-  MaxDistance: 20
-  Length: 0
 --- !u!114 &-1082057284536848318
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119,7 +177,7 @@ MonoBehaviour:
   MinDistance: 1
   MaxDistance: 20
   Length: 40026
---- !u!114 &-335860220921755966
+--- !u!114 &-681488214983271076
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -129,15 +187,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
-  m_Name: bank:/Master.strings.bank
+  m_Name: bank:/Master.bank
   m_EditorClassIdentifier: 
-  Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/Master.strings.bank
-  Name: Master.strings
-  StudioPath: bank:/Master.strings
-  lastModified: 638902889836232434
-  FileSizes:
-  - Name: Desktop
-    Value: 960
+  Path: Assets/StreamingAssets/Build/Desktop/Master.bank
+  Name: Master
+  StudioPath: bank:/Master
+  lastModified: 638902900649048781
+  FileSizes: []
   Exists: 1
 --- !u!114 &11400000
 MonoBehaviour:
@@ -152,28 +208,23 @@ MonoBehaviour:
   m_Name: FMODStudioCache
   m_EditorClassIdentifier: 
   EditorBanks:
-  - {fileID: -335860220921755966}
-  - {fileID: 7599808394188457560}
-  - {fileID: 5926802134928546167}
-  - {fileID: 5221220266052709710}
+  - {fileID: -6924027539058152247}
+  - {fileID: -8320765547206785064}
   EditorEvents:
-  - {fileID: -3527655030585618478}
-  - {fileID: -3560463955354630759}
-  - {fileID: 5994276617636745209}
+  - {fileID: -7128390665034185479}
+  - {fileID: 2661972657545828406}
   EditorParameters: []
   MasterBanks:
-  - {fileID: 5926802134928546167}
+  - {fileID: -8320765547206785064}
   StringsBanks:
-  - {fileID: -335860220921755966}
+  - {fileID: -6924027539058152247}
   cacheVersion: 131848
-  cacheTime: 638902889836247536
+  cacheTime: 638903000233534683
   SerializableEventsDict:
-  - key: event:/test01
-    index: 0
   - key: event:/Music_UsingMarker
-    index: 1
+    index: 0
   - key: event:/Music_oneTempo
-    index: 2
+    index: 1
 --- !u!114 &1146352819935921218
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,6 +272,33 @@ MonoBehaviour:
   MinDistance: 1
   MaxDistance: 20
   Length: 40000
+--- !u!114 &2661972657545828406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Music_oneTempo
+  m_EditorClassIdentifier: 
+  Path: event:/Music_oneTempo
+  Guid:
+    Data1: -457861438
+    Data2: 1080772104
+    Data3: -1958469233
+    Data4: 1433621641
+  Banks:
+  - {fileID: -8320765547206785064}
+  IsStream: 1
+  Is3D: 0
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 40026
 --- !u!114 &4544294689389983391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -241,46 +319,6 @@ MonoBehaviour:
   - Name: 
     Value: 512416
   Exists: 0
---- !u!114 &5221220266052709710
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
-  m_Name: bank:/test.bank
-  m_EditorClassIdentifier: 
-  Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/test.bank
-  Name: test
-  StudioPath: bank:/test
-  lastModified: 638902889836247536
-  FileSizes:
-  - Name: Desktop
-    Value: 506
-  Exists: 1
---- !u!114 &5926802134928546167
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
-  m_Name: bank:/Master.bank
-  m_EditorClassIdentifier: 
-  Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/Master.bank
-  Name: Master
-  StudioPath: bank:/Master
-  lastModified: 638902889836227351
-  FileSizes:
-  - Name: Desktop
-    Value: 1074
-  Exists: 1
 --- !u!114 &5994276617636745209
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -300,7 +338,7 @@ MonoBehaviour:
     Data3: -1958469233
     Data4: 1433621641
   Banks:
-  - {fileID: 7599808394188457560}
+  - {fileID: -681488214983271076}
   IsStream: 1
   Is3D: 0
   IsOneShot: 0
@@ -308,26 +346,6 @@ MonoBehaviour:
   MinDistance: 1
   MaxDistance: 20
   Length: 40026
---- !u!114 &7599808394188457560
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
-  m_Name: bank:/BGM.bank
-  m_EditorClassIdentifier: 
-  Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/BGM.bank
-  Name: BGM
-  StudioPath: bank:/BGM
-  lastModified: 638902889836206973
-  FileSizes:
-  - Name: Desktop
-    Value: 512896
-  Exists: 1
 --- !u!114 &9193261868299228122
 MonoBehaviour:
   m_ObjectHideFlags: 0
