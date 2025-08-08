@@ -74,5 +74,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
-# FMOD auto-generated cache files
-/[Aa]ssets/Plugins/FMOD/Cache/
+# FMOD Studio Cache
+/[Aa]ssets/Plugins/FMOD/Cache/*
+
