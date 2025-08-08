@@ -134,7 +134,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 638899654180495494
+  lastModified: 638902889836232434
   FileSizes:
   - Name: Desktop
     Value: 960
@@ -166,7 +166,7 @@ MonoBehaviour:
   StringsBanks:
   - {fileID: -335860220921755966}
   cacheVersion: 131848
-  cacheTime: 638899654180555507
+  cacheTime: 638902889836247536
   SerializableEventsDict:
   - key: event:/test01
     index: 0
@@ -256,7 +256,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/test.bank
   Name: test
   StudioPath: bank:/test
-  lastModified: 638899654180555507
+  lastModified: 638902889836247536
   FileSizes:
   - Name: Desktop
     Value: 506
@@ -276,7 +276,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 638899654180475488
+  lastModified: 638902889836227351
   FileSizes:
   - Name: Desktop
     Value: 1074
@@ -323,7 +323,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/120bpmJudgeTest/Build/Desktop/BGM.bank
   Name: BGM
   StudioPath: bank:/BGM
-  lastModified: 638899653778871880
+  lastModified: 638902889836206973
   FileSizes:
   - Name: Desktop
     Value: 512896
