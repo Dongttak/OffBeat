@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
 
     public enum GameState { Playing, Paused }
     public GameState CurrentGameState { get; private set; } = GameState.Playing;
+    private bool isResuming = false; // 코루틴 진행 중인지 여부
 
     [Header("UI Panels")]
     public GameObject pausePopupUI;
@@ -44,7 +45,7 @@ public class GameManager : MonoBehaviour
         {
             PauseGame();
         }
-        else if (CurrentGameState == GameState.Paused && Input.GetKeyDown(KeyCode.Escape))
+        else if (CurrentGameState == GameState.Paused && Input.GetKeyDown(KeyCode.Escape) && !isResuming)
         {
             StartCoroutine(ResumeAfterDelay(3f)); // 카운트 후 재개
         }
@@ -68,6 +69,8 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator ResumeAfterDelay(float delay)
     {
+        isResuming = true;
+
         pausePopupUI.SetActive(false);
         // 카운트다운 UI 활성화
         countdownText.gameObject.SetActive(true);
@@ -86,6 +89,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1;
         MusicBus.setPaused(false);
         playerInput.enabled = true; // 입력 다시 활성화
+        isResuming = false;
     }
 
     public void ReturnToTitle()
