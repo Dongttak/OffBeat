@@ -22,14 +22,14 @@ public class BossAttackObject : MonoBehaviour
         if ((player.transform.position - gameObject.transform.position).z > 0)
         {
             //라인 이동 금지시키기
-            playerInput.MoveDeactivate(lineIndex);
+            playerInput.DeactivateTrigger(lineIndex);
             gameObject.SetActive(false);
         }
     }
 
     public void SetIndex(int index)
     {
-        if (index == 0 || index == 1)
+        if (index == 0 || index == 2)
             lineIndex = index;
         else return;
     }

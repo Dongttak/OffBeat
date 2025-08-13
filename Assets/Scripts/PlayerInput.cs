@@ -11,7 +11,9 @@ public class PlayerInput : MonoBehaviour
     public List<Transform> positions; // 라인(플레이어가 이동할 위치) 담을 리스트
     public static event Action AttackEvent; // 공격시 발동하는 이벤트
 
+    [SerializeField]
     private int deactivatedLine = 0;
+    [SerializeField]
     private bool deactivatedMove;
 
     void Update()
@@ -83,9 +85,17 @@ public class PlayerInput : MonoBehaviour
         }
     }
 
-    public void MoveDeactivate(int lineIndex)
+    public IEnumerator MoveDeactivate(int lineIndex)
     {
+        Debug.Log("Deactivate");
         deactivatedLine = lineIndex;
         deactivatedMove = true;
+        yield return new WaitForSeconds(2f);
+        deactivatedMove = false;
+        Debug.Log("Activate");
+    }
+    public void DeactivateTrigger(int lineIndex)
+    {
+        StartCoroutine(MoveDeactivate(lineIndex));
     }
 }
