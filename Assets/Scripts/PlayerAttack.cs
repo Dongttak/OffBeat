@@ -36,6 +36,10 @@ public class PlayerAttack : MonoBehaviour
             {
                 hit.transform.GetComponent<MeshRenderer>().material.color = Color.red;
             }
+            else if (hit.transform.CompareTag("BreakableObject"))
+            {
+                Destroy(hit.transform.gameObject);
+            }
         }
         else
         {

@@ -15,7 +15,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 638905214081046887
+  lastModified: 638905338394550002
   FileSizes: []
   Exists: 1
 --- !u!114 &-7509822755275324708
@@ -80,7 +80,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 638905214081056896
+  lastModified: 638905338394622173
   FileSizes:
   - Name: 
     Value: 830
@@ -219,7 +219,7 @@ MonoBehaviour:
   StringsBanks:
   - {fileID: -6924027539058152247}
   cacheVersion: 131848
-  cacheTime: 638905214081056896
+  cacheTime: 638905338394622173
   SerializableEventsDict:
   - key: event:/Music_UsingMarker
     index: 0
