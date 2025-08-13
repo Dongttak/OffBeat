@@ -11,7 +11,7 @@ public class PlayerInput : MonoBehaviour
     public static event Action AttackEvent; // 공격시 발동하는 이벤트
     public GameObject gun;
     public List<Transform> gunPositions;
-
+    [SerializeField] private CounterManager counterManager; 
     void Update()
     {
         // 왼쪽 이동
@@ -70,6 +70,9 @@ public class PlayerInput : MonoBehaviour
             }
         }
 
+        // 카운터 키
+        if (Input.GetKeyDown(KeyCode.K))
+            counterManager?.TryCounter();
         //// 왼쪽 이동
         //if (Input.GetKeyDown(KeyCode.A))
         //{
