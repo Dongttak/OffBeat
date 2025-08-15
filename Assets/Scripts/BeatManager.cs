@@ -28,7 +28,8 @@ public class BeatManager : MonoBehaviour
     private int _pendingBeatCount = 0;
 
     // GameObject 대신 컴포넌트 캐싱(Null 안전)
-    [SerializeField] private List<PulseToBeat> pulseTargets = new List<PulseToBeat>();
+    //[SerializeField] private List<PulseToBeat> pulseTargets = new List<PulseToBeat>();
+    public List<PulseToBeat> pulseTargets = new List<PulseToBeat>();
 
     // 정박/엇박 판정 구간
     private struct JudgeZone { public int startMs, endMs; }
