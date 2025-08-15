@@ -1,45 +1,64 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
-    private RaycastHit hit;
-    public Transform firePosition; // 총구 위치
-    private bool attackRequired = false; // 공격이 입력되었는지 확인하는 변수
-    
-    void Awake()
+    [SerializeField] private Transform firePosition; // 총구 위치
+    [SerializeField] private float range = 30f;
+    [SerializeField] private LayerMask hitMask = ~0;
+
+    bool attackRequired;
+
+    void OnEnable()
     {
-        PlayerInput.AttackEvent += () => attackRequired = true;
+        PlayerInput.AttackEvent += OnAttackRequested;   // OnEnable에서 구독
+    }
+    void OnDisable()
+    {
+        PlayerInput.AttackEvent -= OnAttackRequested;   // 해제
     }
 
-    private void LateUpdate()
+    void OnAttackRequested() => attackRequired = true;
+
+    void LateUpdate()
     {
-        if (attackRequired)
-        {
-            Attack();
-            attackRequired = false;
-        }
+        if (!attackRequired) return;
+        attackRequired = false;
+        Attack();
     }
 
     void OnDrawGizmos()
     {
+        if (!firePosition) return;
         Gizmos.color = Color.blue;
-        Gizmos.DrawRay(firePosition.position, transform.forward * 30);
+        Gizmos.DrawRay(firePosition.position, firePosition.forward * range);
     }
-    private void Attack()
+
+    void Attack()
     {
-        if (Physics.Raycast(firePosition.position, Vector3.forward, out hit, 30f))
+        if (!firePosition)
+        {
+            Debug.LogWarning("[PlayerAttack] firePosition not assigned");
+            return;
+        }
+
+        RaycastHit hit;
+        // 월드 전방(Vector3.forward) 말고 총구 기준 전방(firePosition.forward) 사용
+        if (Physics.Raycast(firePosition.position, firePosition.forward, out hit, range, hitMask, QueryTriggerInteraction.Ignore))
         {
             if (hit.transform.CompareTag("Enemy"))
             {
-                hit.transform.GetComponent<MeshRenderer>().material.color = Color.red;
+                var mr = hit.transform.GetComponent<MeshRenderer>();
+                if (mr) mr.material.color = Color.red;
+                Debug.Log($"[PlayerAttack] Hit Enemy: {hit.transform.name}");
+            }
+            else
+            {
+                Debug.Log($"[PlayerAttack] Hit: {hit.transform.name} (not Enemy)");
             }
         }
         else
         {
-            Debug.Log("fail");
+            Debug.Log("[PlayerAttack] Miss");
         }
     }
 }

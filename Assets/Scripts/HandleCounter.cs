@@ -4,40 +4,99 @@ using UnityEngine.UI;
 
 public class HandleCounter : MonoBehaviour
 {
-    [SerializeField] private GameObject counterUI;
+    [Header("DI")]
+    [SerializeField] private CounterManager counterManager;   // 씬의 CounterManager 드래그 (비워두면 자동탐색)
 
-    private void Start()
+    [Header("UI")]
+    [SerializeField] private GameObject counterUI;            // "COUNTER" 표시 오브젝트(이미지/패널)
+    [SerializeField] private CanvasGroup canvasGroup;         // 선택: 페이드 효과 주고 싶으면 연결
+    [SerializeField] private float fadeIn = 0.08f;
+    [SerializeField] private float fadeOut = 0.12f;
+
+    [Header("Debug")]
+    [SerializeField] private bool debugHotkey = true;         // 테스트용: J로 창 열기
+    [SerializeField] private KeyCode openKey = KeyCode.J;
+
+    Coroutine fading;
+
+    void Awake()
     {
-        counterUI.SetActive(false);
-        StartCoroutine(SpawnCounterRoutine());
+        if (!counterManager) counterManager = FindObjectOfType<CounterManager>();
+        if (counterUI) counterUI.SetActive(false);
+        if (!canvasGroup && counterUI) canvasGroup = counterUI.GetComponent<CanvasGroup>();
+        if (canvasGroup) canvasGroup.alpha = 0f;
     }
 
-    private void Update()
+    void OnEnable()
     {
-        // 괄호로 조건 명확히
-        if ((Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)) &&
-            BeatState.Instance.CurrBeatState == BeatState.BeatType.OffBeat)
+        if (counterManager != null)
         {
-            counterUI.SetActive(false);
+            counterManager.OnCounterOpen += ShowUI;
+            counterManager.OnCounterSuccess += HideUI;
+            counterManager.OnCounterFail += HideUI;
         }
     }
 
-    private IEnumerator SpawnCounterRoutine()
+    void OnDisable()
     {
-        yield return new WaitForSeconds(2.0f);
-        ActivateCounter();
-
-        for (int i = 0; i < 4; i++)
+        if (counterManager != null)
         {
-            yield return new WaitForSeconds(4.0f);
-            ActivateCounter();
+            counterManager.OnCounterOpen -= ShowUI;
+            counterManager.OnCounterSuccess -= HideUI;
+            counterManager.OnCounterFail -= HideUI;
         }
     }
 
-    private void ActivateCounter()
+    void Update()
     {
-        // 필요한 경우 리셋이나 애니메이션도 추가 가능
+        // 테스트용: J를 눌러 카운터 윈도우 강제 오픈
+        if (debugHotkey && Input.GetKeyDown(openKey))
+        {
+            counterManager?.OpenWindow();
+            Debug.Log("[CounterUI] Debug: OpenWindow()");
+        }
+    }
+
+    // ===== UI 연출 =====
+    void ShowUI()
+    {
+        if (!counterUI) return;
         counterUI.SetActive(true);
-        Debug.Log("카운터 UI 활성화");
+        if (fading != null) StopCoroutine(fading);
+        fading = StartCoroutine(CoFade(1f, fadeIn));
+        Debug.Log("[CounterUI] Window OPEN");
+    }
+
+    void HideUI()
+    {
+        if (!counterUI) return;
+        if (fading != null) StopCoroutine(fading);
+        if (canvasGroup)
+            fading = StartCoroutine(CoFade(0f, fadeOut, () => counterUI.SetActive(false)));
+        else
+            counterUI.SetActive(false);
+
+        Debug.Log("[CounterUI] Window CLOSE");
+    }
+
+    IEnumerator CoFade(float target, float duration, System.Action onEnd = null)
+    {
+        if (!canvasGroup)
+        {
+            onEnd?.Invoke();
+            yield break;
+        }
+
+        float start = canvasGroup.alpha;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            canvasGroup.alpha = Mathf.Lerp(start, target, t / duration);
+            yield return null;
+        }
+        canvasGroup.alpha = target;
+        onEnd?.Invoke();
+        fading = null;
     }
 }

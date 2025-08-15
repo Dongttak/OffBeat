@@ -1,115 +1,94 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using System;                  // 이벤트용
 using DG.Tweening;
-using System;
+using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
-    private int posIndex = 1; // 현재 위치 인덱스 0(왼쪽), 1(가운데), 2(오른쪽)
-    public List<Transform> positions; // 라인(플레이어가 이동할 위치) 담을 리스트
-    public static event Action AttackEvent; // 공격시 발동하는 이벤트
-    public GameObject gun;
-    public List<Transform> gunPositions;
+    public static event Action AttackEvent;   // 추가
+
+    [Header("Move Lanes")]
+    [SerializeField] private Transform[] positions;   // [0]=왼, [1]=중앙, [2]=오
+    [SerializeField] private float moveDuration = 0.2f;
+
+    [Header("Refs")]
+    [SerializeField] private CounterManager counterManager; // 비워두면 자동 탐색
+
+    private int posIndex = 1;
+
+    // 같은 박자 창에서 1회만 허용(정박/엇박 래치 분리)
+    private int _lastOnId = int.MinValue;
+    private int _lastOffId = int.MinValue;
+
+    void Awake()
+    {
+        if (!counterManager) counterManager = FindObjectOfType<CounterManager>();
+    }
 
     void Update()
     {
-        // 왼쪽 이동
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
+        if (BeatManager.Instance == null) return;
 
-            if (posIndex > 0 && (currentBeat == BeatState.BeatType.OnBeat))
+        bool isOn = BeatManager.Instance.IsOnBeatNow();
+        bool isOff = BeatManager.Instance.IsOffBeatNow();
+
+        int windowId = isOn ? GetOnId()
+                            : isOff ? GetOffId() : int.MinValue;
+
+        // ===== 정박 전용: 이동/공격 =====
+        if (isOn && windowId != _lastOnId)
+        {
+            if (Input.GetKeyDown(KeyCode.A) && posIndex > 0)
             {
-                transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-                Debug.Log("Move Left");
-                if (posIndex == 1)
-                {
-                    //gun.transform.position = gunPositions[1].position;
-                }
+                ConsumeOn(windowId);
+                MoveTo(posIndex - 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.D) && posIndex < 2)
+            {
+                ConsumeOn(windowId);
+                MoveTo(posIndex + 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.Space))
+            {
+                ConsumeOn(windowId);
+                AttackEvent?.Invoke();                 
+                Debug.Log("[PlayerInput] Attack (OnBeat) event fired");
             }
         }
 
-        // 오른쪽 이동
-        if (Input.GetKeyDown(KeyCode.D))
+        // ===== 엇박 전용: 카운터 =====
+        if (isOff && windowId != _lastOffId)
         {
-            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
-
-            if (posIndex < 2 && (currentBeat == BeatState.BeatType.OnBeat))
+            if (Input.GetKeyDown(KeyCode.K))
             {
-                transform.DOMove(positions[++posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-                Debug.Log("Move Right");
-                if (posIndex == 2)
-                {
-                    //gun.transform.position = gunPositions[0].position;
-                }
+                _lastOffId = windowId;
+                bool ok = counterManager && counterManager.TryCounter();
+                Debug.Log(ok ? "[Counter] Try -> SUCCESS" : "[Counter] Try -> FAIL");
             }
         }
+    }
 
-        // 공격
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
+    // 정박/엇박 ID (현재 타임라인과 interval로 계산)
+    int GetOnId()
+    {
+        int interval = BeatManager.Instance.IntervalMs;
+        int now = BeatManager.Instance.GetTimelineMs();
+        return Mathf.RoundToInt(now / (float)interval) * 2; // 정박 = 짝수
+    }
+    int GetOffId()
+    {
+        int interval = BeatManager.Instance.IntervalMs;
+        int now = BeatManager.Instance.GetTimelineMs();
+        int half = interval / 2;
+        return (Mathf.RoundToInt((now - half) / (float)interval) * 2) + 1; // 엇박 = 홀수
+    }
 
-            if(currentBeat == BeatState.BeatType.OnBeat)
-            {
-                AttackEvent?.Invoke();
-                Debug.Log("Attack Triggered");
-            }
+    void ConsumeOn(int onId) => _lastOnId = onId;
 
-        }
-
-        // 회피
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
-
-            if (currentBeat == BeatState.BeatType.OnBeat)
-            {
-                Debug.Log("Evade Triggered");
-            }
-        }
-
-        //// 왼쪽 이동
-        //if (Input.GetKeyDown(KeyCode.A))
-        //{
-        //    if (posIndex > 0 && BeatManager.Instance.IsOnBeatNow())
-        //    {
-        //        transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-        //        Debug.Log("Move Left");
-        //        if (posIndex == 1)
-        //        {
-        //            gun.transform.position = gunPositions[1].position;
-        //        }
-
-        //    }
-        //}
-
-        //// 오른쪽 이동
-        //if (Input.GetKeyDown(KeyCode.D))
-        //{
-        //    if (posIndex < 2 && BeatManager.Instance.IsOnBeatNow())
-        //    {
-        //        transform.DOMove(positions[++posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-        //        Debug.Log("Move Right"); 
-        //        if (posIndex == 2)
-        //        {
-        //            gun.transform.position = gunPositions[0].position;
-        //        }
-        //    }
-        //}
-
-        //// 공격
-        //if (Input.GetKeyDown(KeyCode.Space) && BeatManager.Instance.IsOnBeatNow())
-        //{
-        //    AttackEvent?.Invoke();
-        //    Debug.Log("Attack Triggered");
-        //}
-
-        //// 회피
-        //if (Input.GetKeyDown(KeyCode.LeftShift) && BeatManager.Instance.IsOnBeatNow())
-        //{
-        //    Debug.Log("Evade Triggered");
-        //}
+    void MoveTo(int nextIndex)
+    {
+        transform.DOKill(); // 이전 트윈 끊기(씹힘 방지)
+        posIndex = nextIndex;
+        transform.DOMove(positions[posIndex].position, moveDuration)
+                 .SetEase(Ease.InOutQuad);
     }
 }
