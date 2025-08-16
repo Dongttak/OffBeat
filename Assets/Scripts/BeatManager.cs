@@ -1,53 +1,46 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using FMODUnity;
 using FMOD.Studio;
+using System.Runtime.InteropServices;
 
 public class BeatManager : MonoBehaviour
 {
     public static BeatManager Instance { get; private set; }
 
-    [Header("BPM Setting")]
-    [SerializeField] private float bpm = 120f;
-    [SerializeField] private float stepsPerBeat = 1f;                // 4분음표=1
-    [SerializeField, Range(0f, 1f)] private float hitRangePercent = 0.25f;
-
-    [Header("FMOD Setting")]
+    [Header("FMOD Settings")]
     [SerializeField] private EventReference musicEvent;
+    private EventInstance musicInstance;
+    private EventDescription musicDesc;
+    private EVENT_CALLBACK beatCallback;
+    private int songLengthMs = 0;
 
-    // FMOD
-    private EventInstance _instance;
-    private EventDescription _desc;
-    private EVENT_CALLBACK _callback;
+    
+    [Header("Tempo Settings")]
+    [SerializeField] private float bpm = 120f;
+    [SerializeField] private float stepsPerBeat = 1f; // 4분음표 = 1, 8분음표 = 2
+    [SerializeField, Range(0f, 1f)] private float hitWindowPercent = 0.25f;
 
-    // 판정용 시간(ms)
-    private int _intervalMs;   // 1스텝(=stepsPerBeat 기준 박자) 간격
-    private int _hitRangeMs;   // 허용 범위
+    private int intervalMs;
+    private int hitRangeMs;
+    private bool isInitialized;
 
-    // 외부에서 쓰라고 노출 (PlayerInput이 사용)
-    public int IntervalMs => _intervalMs;
-    public int HitRangeMs => _hitRangeMs;
+    private int _pendingBeatCount = 0;
 
-    // 정박/엇박 구간
-    private struct Zone { public int startMs, endMs; }
-    private readonly List<Zone> _onZones = new List<Zone>();
-    private readonly List<Zone> _offZones = new List<Zone>();
+    private readonly List<JudgeZone> onBeatZones = new();
+    private readonly List<JudgeZone> offBeatZones = new();
 
-    // 오디오스레드 → 메인스레드 신호
-    private int _pendingBeat;
+    public List<PulseToBeat> pulseTargets = new();
 
-    // (선택) 비주얼 펄스 타겟
-    [SerializeField] private List<PulseToBeat> pulseTargets = new List<PulseToBeat>();
+    public static event Action OnBeat;
+    public static event Action OffBeat;
 
-    // 외부 구독 이벤트(필요시 사용)
-    public static event Action OnBeatTick;
-    public static event Action OffBeatTick;
+    public bool IsInitialized => isInitialized;
 
-    public bool Initialized { get; private set; }
+    private struct JudgeZone { public int startMs, endMs; }
 
-    void Awake()
+    private void Awake()
     {
         if (Instance == null) Instance = this;
         else { Destroy(gameObject); return; }
@@ -56,114 +49,139 @@ public class BeatManager : MonoBehaviour
             pulseTargets = new List<PulseToBeat>(FindObjectsOfType<PulseToBeat>(true));
     }
 
-    void Start()
+    private void Start()
     {
-        InitAndStart();
+        InitAndStartMusic();
     }
 
-    void InitAndStart()
+    private void InitAndStartMusic()
     {
-        _instance = RuntimeManager.CreateInstance(musicEvent);
-        _desc = RuntimeManager.GetEventDescription(musicEvent);
-        _desc.getLength(out int songLenMs);
+        musicInstance = RuntimeManager.CreateInstance(musicEvent);
+        musicDesc = RuntimeManager.GetEventDescription(musicEvent);
+        musicDesc.getLength(out int songLengthMs);
 
-        float stepSec = 60f / (bpm * stepsPerBeat);
-        float hitSec = stepSec * hitRangePercent;
+        RecalculateTiming();
+        BuildJudgeZones(songLengthMs);
 
-        _intervalMs = Mathf.RoundToInt(stepSec * 1000f);
-        _hitRangeMs = Mathf.RoundToInt(hitSec * 1000f);
+        beatCallback = TimelineBeatCallback;
+        musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
 
-        // 정박 구간
-        _onZones.Clear();
-        for (int t = 0; t <= songLenMs; t += _intervalMs)
-            _onZones.Add(new Zone { startMs = t - _hitRangeMs, endMs = t + _hitRangeMs });
-
-        // 엇박 구간(절반 시프트)
-        _offZones.Clear();
-        int half = _intervalMs / 2;
-        for (int t = half; t <= songLenMs; t += _intervalMs)
-            _offZones.Add(new Zone { startMs = t - _hitRangeMs, endMs = t + _hitRangeMs });
-
-        _callback = TimelineCallback;
-        _instance.setCallback(_callback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
-
-        _instance.start();
-        Initialized = true;
+        musicInstance.start();
+        isInitialized = true;
     }
-
-    void Update()
+    public void SetSongLengthSeconds(float seconds)
     {
-        if (!Initialized) return;
+        songLengthMs = Mathf.RoundToInt(seconds * 1000f);
+        BuildJudgeZones(songLengthMs);  // 판정 구간 갱신
+    }
+    public void SetTempo(float newBpm, float newStepsPerBeat = -1f, float? newHitWindowPercent = null)
+    {
+        if (newBpm > 0f) bpm = newBpm;
+        if (newStepsPerBeat > 0f) stepsPerBeat = newStepsPerBeat;
+        if (newHitWindowPercent.HasValue)
+            hitWindowPercent = Mathf.Clamp01(newHitWindowPercent.Value);
 
-        // 오디오스레드에서 들어온 비트 신호 처리(한 프레임 1회)
-        if (_pendingBeat > 0)
+        RecalculateTiming();
+
+        if (musicDesc.isValid())
         {
-            _pendingBeat = 0;
+            musicDesc.getLength(out int songLenMs);
+            BuildJudgeZones(songLenMs);
+        }
+    }
+
+    private void RecalculateTiming()
+    {
+        float intervalSec = 60f / (bpm * stepsPerBeat);
+        intervalMs = Mathf.RoundToInt(intervalSec * 1000f);
+        hitRangeMs = Mathf.RoundToInt(intervalSec * hitWindowPercent * 1000f);
+    }
+
+    private void BuildJudgeZones(int songLenMs)
+    {
+        onBeatZones.Clear();
+        offBeatZones.Clear();
+
+        for (int t = 0; t <= songLenMs; t += intervalMs)
+        {
+            onBeatZones.Add(new JudgeZone { startMs = t - hitRangeMs, endMs = t + hitRangeMs });
+        }
+
+        int offset = intervalMs / 2;
+        for (int t = offset; t <= songLenMs; t += intervalMs)
+        {
+            offBeatZones.Add(new JudgeZone { startMs = t - hitRangeMs, endMs = t + hitRangeMs });
+        }
+    }
+
+    private void Update()
+    {
+        if (!isInitialized) return;
+
+        if (_pendingBeatCount > 0)
+        {
+            _pendingBeatCount = 0;
 
             int now = GetTimelineMs();
 
-            if (IsInZones(now, _onZones))
+            if (IsInZone(now, onBeatZones))
             {
                 BeatState.Instance.CurrBeatState = BeatState.BeatType.OnBeat;
-                OnBeatTick?.Invoke();
+                OnBeat?.Invoke();
             }
-            else if (IsInZones(now, _offZones))
+            else if (IsInZone(now, offBeatZones))
             {
                 BeatState.Instance.CurrBeatState = BeatState.BeatType.OffBeat;
-                OffBeatTick?.Invoke();
+                OffBeat?.Invoke();
             }
             else
             {
                 BeatState.Instance.CurrBeatState = BeatState.BeatType.Miss;
             }
 
-            // 비주얼 펄스(선택)
             foreach (var p in pulseTargets)
                 if (p != null) p.Pulse();
         }
     }
 
-    // === 외부 헬퍼 ===
-    public int GetTimelineMs()
+    private int GetTimelineMs()
     {
-        if (_instance.isValid())
+        if (musicInstance.isValid())
         {
-            _instance.getTimelinePosition(out int ms);
+            musicInstance.getTimelinePosition(out int ms);
             return ms;
         }
         return 0;
     }
 
-    public bool IsOnBeatNow() => IsInZones(GetTimelineMs(), _onZones);
-    public bool IsOffBeatNow() => IsInZones(GetTimelineMs(), _offZones);
-
-    private static bool IsInZones(int t, List<Zone> zones)
+    private static bool IsInZone(int t, List<JudgeZone> zones)
     {
-        for (int i = 0; i < zones.Count; i++)
+        foreach (var z in zones)
         {
-            var z = zones[i];
-            if (t < z.startMs) return false; // 아직 이르다
-            if (t <= z.endMs) return true;  // 구간 안
+            if (t < z.startMs) return false;
+            if (t <= z.endMs) return true;
         }
         return false;
     }
 
-    // === FMOD 오디오스레드 콜백 ===
     [AOT.MonoPInvokeCallback(typeof(EVENT_CALLBACK))]
-    private static FMOD.RESULT TimelineCallback(EVENT_CALLBACK_TYPE type, IntPtr instancePtr, IntPtr parameterPtr)
+    private static FMOD.RESULT TimelineBeatCallback(EVENT_CALLBACK_TYPE type, IntPtr inst, IntPtr param)
     {
         if (type == EVENT_CALLBACK_TYPE.TIMELINE_BEAT && Instance != null)
-            Instance._pendingBeat++;
+            Instance._pendingBeatCount++;
         return FMOD.RESULT.OK;
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
-        if (_instance.isValid())
+        if (musicInstance.isValid())
         {
-            _instance.setCallback(null);
-            _instance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
-            _instance.release();
+            musicInstance.setCallback(null);
+            musicInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+            musicInstance.release();
         }
     }
+
+    public bool IsOnBeatNow() => IsInZone(GetTimelineMs(), onBeatZones);
+    public bool IsOffBeatNow() => IsInZone(GetTimelineMs(), offBeatZones);
 }

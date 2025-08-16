@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 39573931}
   - component: {fileID: 39573930}
   - component: {fileID: 39573932}
+  - component: {fileID: 39573933}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -220,6 +221,44 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nonRigidbodyVelocity: 0
   attenuationObject: {fileID: 0}
+--- !u!114 &39573933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 39573928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf32c1d9a65c56945a41d0778fe7dc17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  counterManager: {fileID: 1113954334}
+  targetCamera: {fileID: 0}
+  bossTarget: {fileID: 763241227}
+  bossRoot: {fileID: 763241227}
+  useAutoFraming: 1
+  framingPadding: 1.3
+  fitByHeight: 1
+  minDistance: 6
+  maxDistance: 30
+  manualOffset: {x: 0, y: 2, z: -12}
+  boundsLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  requiredTag: DJ.Kong
+  freezeBoundsDuringShot: 1
+  shakersToDisable: []
+  focusInTime: 0.22
+  focusHoldTime: 0.35
+  fovKickAmount: 8
+  fovInTime: 0.12
+  fovOutTime: 0.2
+  slowScale: 0.25
+  slowDuration: 0.9
+  cameraControllersToDisable: []
+  enableTestKey: 1
+  testKey: 116
 --- !u!1 &96957242
 GameObject:
   m_ObjectHideFlags: 0
@@ -232,8 +271,9 @@ GameObject:
   - component: {fileID: 96957245}
   - component: {fileID: 96957244}
   - component: {fileID: 96957243}
+  - component: {fileID: 96957247}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: CounterUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -322,6 +362,24 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &96957247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 96957242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e255ed36b62f564a9ffefefd113469f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mgr: {fileID: 1113954334}
+  hintGroup: {fileID: 0}
+  windowGroup: {fileID: 0}
+  windowFill: {fileID: 0}
+  successGroup: {fileID: 0}
+  fadeTime: 0.1
 --- !u!1 &357538299
 GameObject:
   m_ObjectHideFlags: 0
@@ -620,6 +678,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99795961e1daa9d42a5815d39cd65a2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &721561707 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b4ea8503e69ed9b4db8a80beb68d1e91, type: 3}
+  m_PrefabInstance: {fileID: 1339019649}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &721561708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 721561707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aca6395481d60b545b685bcfdcb5d38b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _pulseSize: 1.15
+  _returnSpeed: 5
 --- !u!1001 &763241226
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -705,6 +782,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 517f710e3fc7f704e97e64161f436509, type: 3}
+--- !u!4 &763241227 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2673257546543179901, guid: 517f710e3fc7f704e97e64161f436509, type: 3}
+  m_PrefabInstance: {fileID: 763241226}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &897990572
 GameObject:
   m_ObjectHideFlags: 0
@@ -734,12 +816,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee8311c3e1d5d1a4e8f549c9d22f570f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  counterManager: {fileID: 1113954334}
-  counterUI: {fileID: 96957242}
-  canvasGroup: {fileID: 0}
-  fadeIn: 0.08
-  fadeOut: 0.12
-  debugHotkey: 1
+  mgr: {fileID: 0}
+  hintKey: 104
   openKey: 106
 --- !u!4 &897990574
 Transform:
@@ -787,6 +865,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1116635454}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1000193015
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1000193017}
+  - component: {fileID: 1000193016}
+  m_Layer: 0
+  m_Name: AudioSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1000193016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000193015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cab3829cd7d78847b922af8bda85e54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  musicEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+--- !u!4 &1000193017
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000193015}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.559973, y: 1.2778482, z: 5.881954}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1096053156
 GameObject:
   m_ObjectHideFlags: 0
@@ -816,9 +945,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6ec1936feb97814b8b3100f98d2ca5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bpm: 120
-  stepsPerBeat: 1
-  hitRangePercent: 0.25
   musicEvent:
     Guid:
       Data1: -457861438
@@ -826,6 +952,9 @@ MonoBehaviour:
       Data3: -1958469233
       Data4: 1433621641
     Path: event:/Music_oneTempo
+  bpm: 120
+  stepsPerBeat: 1
+  hitWindowPercent: 0.25
   pulseTargets: []
 --- !u!4 &1096053159
 Transform:
@@ -1103,6 +1232,7 @@ MonoBehaviour:
   windowDuration: 0.35
   cooldown: 0.5
   requireOffBeat: 1
+  showHints: 1
 --- !u!1 &1116635453
 GameObject:
   m_ObjectHideFlags: 0
@@ -1397,6 +1527,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b4ea8503e69ed9b4db8a80beb68d1e91, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 721561708}
     - targetCorrespondingSourceObject: {fileID: 2463706537061040287, guid: b4ea8503e69ed9b4db8a80beb68d1e91, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1719476291}
@@ -1860,6 +1993,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 3c67479de17220542a7b187c4ec33ee6, type: 2}
     - target: {fileID: 1650956712066078865, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
+      propertyPath: counterVFX
+      value: 
+      objectReference: {fileID: 39573933}
+    - target: {fileID: 1650956712066078865, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
+      propertyPath: counterManager
+      value: 
+      objectReference: {fileID: 1113954334}
+    - target: {fileID: 1650956712066078865, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
       propertyPath: positions.Array.data[0]
       value: 
       objectReference: {fileID: 1113761986}
@@ -1898,6 +2039,10 @@ PrefabInstance:
     - target: {fileID: 7463405499644600633, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 7525506333740417026, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
+      propertyPath: m_Constraints
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 8202826846344835748, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -1970,3 +2115,4 @@ SceneRoots:
   - {fileID: 1990228307}
   - {fileID: 763241226}
   - {fileID: 96957246}
+  - {fileID: 1000193017}

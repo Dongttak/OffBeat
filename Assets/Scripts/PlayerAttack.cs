@@ -2,63 +2,49 @@ using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
-    [SerializeField] private Transform firePosition; // 총구 위치
+    [Header("Raycast")]
+    [SerializeField] private Transform firePosition;
     [SerializeField] private float range = 30f;
     [SerializeField] private LayerMask hitMask = ~0;
+    [SerializeField] private QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.Ignore;
 
-    bool attackRequired;
+    [Header("Hit Feedback (optional)")]
+    [SerializeField] private string enemyTag = "Enemy";
+    [SerializeField] private bool flashOnHit = true;
+    [SerializeField] private Color flashColor = Color.red;
+    [SerializeField] private float flashTime = 0.08f;
 
-    void OnEnable()
+    public void Attack()
     {
-        PlayerInput.AttackEvent += OnAttackRequested;   // OnEnable에서 구독
-    }
-    void OnDisable()
-    {
-        PlayerInput.AttackEvent -= OnAttackRequested;   // 해제
-    }
+        Vector3 origin = firePosition ? firePosition.position : transform.position;
+        Vector3 dir = firePosition ? firePosition.forward : transform.forward;
 
-    void OnAttackRequested() => attackRequired = true;
-
-    void LateUpdate()
-    {
-        if (!attackRequired) return;
-        attackRequired = false;
-        Attack();
-    }
-
-    void OnDrawGizmos()
-    {
-        if (!firePosition) return;
-        Gizmos.color = Color.blue;
-        Gizmos.DrawRay(firePosition.position, firePosition.forward * range);
-    }
-
-    void Attack()
-    {
-        if (!firePosition)
+        if (Physics.Raycast(origin, dir, out RaycastHit hit, range, hitMask, triggerInteraction))
         {
-            Debug.LogWarning("[PlayerAttack] firePosition not assigned");
-            return;
-        }
+            Debug.DrawLine(origin, hit.point, Color.yellow, 0.25f);
 
-        RaycastHit hit;
-        // 월드 전방(Vector3.forward) 말고 총구 기준 전방(firePosition.forward) 사용
-        if (Physics.Raycast(firePosition.position, firePosition.forward, out hit, range, hitMask, QueryTriggerInteraction.Ignore))
-        {
-            if (hit.transform.CompareTag("Enemy"))
+            if (hit.transform.CompareTag(enemyTag))
             {
-                var mr = hit.transform.GetComponent<MeshRenderer>();
-                if (mr) mr.material.color = Color.red;
-                Debug.Log($"[PlayerAttack] Hit Enemy: {hit.transform.name}");
-            }
-            else
-            {
-                Debug.Log($"[PlayerAttack] Hit: {hit.transform.name} (not Enemy)");
+                var rend = hit.transform.GetComponent<Renderer>();
+                if (flashOnHit && rend && rend.material && rend.material.HasProperty("_Color"))
+                    StartCoroutine(Flash(rend));
+
+           
             }
         }
         else
         {
-            Debug.Log("[PlayerAttack] Miss");
+            Debug.DrawRay(origin, dir * range, Color.cyan, 0.25f);
         }
+    }
+
+    private System.Collections.IEnumerator Flash(Renderer rend)
+    {
+        var mat = rend.material;
+        if (!mat.HasProperty("_Color")) yield break;
+        Color original = mat.color;
+        mat.color = flashColor;
+        yield return new WaitForSeconds(flashTime);
+        mat.color = original;
     }
 }
