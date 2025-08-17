@@ -9,145 +9,225 @@ public class BeatManager : MonoBehaviour
 {
     public static BeatManager Instance { get; private set; }
 
-    [Header("BPM Setting")]
-    [SerializeField] private float bpm = 120f;
-    [SerializeField] private float stepsPerBeat = 1f;                 // 4ºĞÀ½Ç¥=1
-    [SerializeField, Range(0f, 1f)] private float hitRangePercentage = 0.25f;
-
-    [Header("FMOD Setting")]
-    [SerializeField] private EventReference musicEventPath;
-
+    [Header("FMOD Settings")]
+    [SerializeField] private EventReference musicEvent;
     private EventInstance musicInstance;
-    private EventDescription musicDescription;
+    private EventDescription musicDesc;
     private EVENT_CALLBACK beatCallback;
 
-    private int intervalDurationMs;
-    private int hitRangeMs;
+    [Header("Tempo Settings")]
+    [Tooltip("ì›í•˜ëŠ” ì²´ê° BPM. useFmodTempoë¥¼ ë„ë©´ ì´ ê°’ ê¸°ì¤€ìœ¼ë¡œ OnBeat/OffBeatì´ ë°œìƒ")]
+    [SerializeField] private float bpm = 120f;
 
-    // ¸ŞÀÎ½º·¹µå¿¡¼­ Ã³¸®ÇÒ ºñÆ® ½ÅÈ£(Äİ¹é¿¡¼­ ++)
-    private int _pendingBeatCount = 0;
+    [Tooltip("í•œ ë°•ìë‹¹ ìŠ¤í… ìˆ˜ (4ë¶„ìŒí‘œ=1, 8ë¶„ìŒí‘œ=2)")]
+    [SerializeField] private float stepsPerBeat = 1f;
 
-    // GameObject ´ë½Å ÄÄÆ÷³ÍÆ® Ä³½Ì(Null ¾ÈÀü)
-    //[SerializeField] private List<PulseToBeat> pulseTargets = new List<PulseToBeat>();
-    public List<PulseToBeat> pulseTargets = new List<PulseToBeat>();
+    [Tooltip("íŒì • ìœˆë„ìš° í­ (ìŠ¤í… ê¸¸ì´ì˜ %)")]
+    [Range(0f, 1f)][SerializeField] private float hitWindowPercent = 0.25f;
 
-    // Á¤¹Ú/¾ù¹Ú ÆÇÁ¤ ±¸°£
-    private struct JudgeZone { public int startMs, endMs; }
-    private readonly List<JudgeZone> onBeatZones = new List<JudgeZone>();
-    private readonly List<JudgeZone> offBeatZones = new List<JudgeZone>();
+    [Header("Beat Source")]
+    [Tooltip("FMOD ì½œë°±ì—ì„œ ë‚´ë ¤ì£¼ëŠ” tempoë¥¼ ì“¸ì§€ ì—¬ë¶€. ë„ë©´ ìœ„ì˜ bpm ê³ ì •")]
+    [SerializeField] private bool useFmodTempo = false;
 
+    private int intervalMs;   // ìŠ¤í… ê°„ê²©(ms)
+    private int hitRangeMs;   // íŒì • ë°˜ê²½(ms)
     private bool isInitialized;
 
-   
-    public static event Action OnBeat;     // Á¤¹Ú Æ½
-    public static event Action OffBeat;    // ¾ù¹Ú Æ½
+    private float _lastTempoFromFmod = -1f;
 
+    // íƒ€ì„ë¼ì¸ ê¸°ë°˜ beat emission
+    private int _lastBeatIndex = -1;
+    private bool _offEmittedForThisBeat = false;
+
+    // í´ë°±ìš© (FMOD íƒ€ì„ë¼ì¸ì´ 0ë§Œ ì£¼ëŠ” í™˜ê²½)
+    private float _startUnscaledTime;
+    private bool _useFallbackTime = false;
+
+    // íŒì • ì˜ì—­
+    private struct JudgeZone { public int startMs, endMs; }
+    private readonly List<JudgeZone> onBeatZones = new();
+    private readonly List<JudgeZone> offBeatZones = new();
+
+    // Pulse ëŒ€ìƒ
+    public List<PulseToBeat> pulseTargets = new();
+
+    // ì´ë²¤íŠ¸
+    public static event Action OnBeat;
+    public static event Action OffBeat;
+
+    public bool IsInitialized => isInitialized;
+
+    // FMOD ì½œë°±ì—ì„œ ë‚´ë ¤ì£¼ëŠ” ì†ì„±
+    [StructLayout(LayoutKind.Sequential)]
+    struct TimelineBeatProperties
+    {
+        public int bar;
+        public int beat;
+        public int position;   // ms
+        public float tempo;
+        public int timesig_numerator;
+        public int timesig_denominator;
+    }
+    
     void Awake()
     {
-        if (Instance == null) Instance = this; else { Destroy(gameObject); return; }
+        if (Instance == null) Instance = this;
+        else { Destroy(gameObject); return; }
 
         if (pulseTargets == null || pulseTargets.Count == 0)
             pulseTargets = new List<PulseToBeat>(FindObjectsOfType<PulseToBeat>(true));
     }
-
+    
     void Start()
     {
-        InitAndStartFMOD();
+        InitAndStartMusic();
     }
 
-    void InitAndStartFMOD()
+    void InitAndStartMusic()
     {
-        musicInstance = RuntimeManager.CreateInstance(musicEventPath);
-        musicDescription = RuntimeManager.GetEventDescription(musicEventPath);
-        musicDescription.getLength(out int songLenMs);
+        musicInstance = RuntimeManager.CreateInstance(musicEvent);
+        musicDesc = RuntimeManager.GetEventDescription(musicEvent);
 
-        float interval_s = 60f / (bpm * stepsPerBeat);
-        float hitRange_s = interval_s * hitRangePercentage;
-        intervalDurationMs = Mathf.RoundToInt(interval_s * 1000f);
-        hitRangeMs = Mathf.RoundToInt(hitRange_s * 1000f);
+        // ê¸°ë³¸ ê³¡ ê¸¸ì´
+        int songLenMs = 180_000;
+        if (musicDesc.isValid())
+        {
+            musicDesc.getLength(out songLenMs);
+            if (songLenMs <= 0) songLenMs = 180_000;
+        }
 
-        // Á¤¹Ú ±¸°£ ±¸¼º
-        onBeatZones.Clear();
-        for (int t = 0; t <= songLenMs; t += intervalDurationMs)
-            onBeatZones.Add(new JudgeZone { startMs = t - hitRangeMs, endMs = t + hitRangeMs });
+        RecalculateTiming();
+        BuildJudgeZones(songLenMs);
 
-        // ¾ù¹Ú ±¸°£ ±¸¼º(Á¤¹ÚÀÇ Àı¹İ ½ÃÇÁÆ®)
-        offBeatZones.Clear();
-        int halfMs = intervalDurationMs / 2;
-        for (int t = halfMs; t <= songLenMs; t += intervalDurationMs)
-            offBeatZones.Add(new JudgeZone { startMs = t - hitRangeMs, endMs = t + hitRangeMs });
-
-        // FMOD Äİ¹é µî·Ï
-        beatCallback = TimelineCallback;
+        // ì½œë°± ë“±ë¡ (tempo ì¶”ì¶œìš©)
+        beatCallback = TimelineBeatCallback;
         musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
 
         musicInstance.start();
         isInitialized = true;
+
+        // FMOD íƒ€ì„ë¼ì¸ì´ 0ë§Œ ì¤„ ê²½ìš° ëŒ€ë¹„
+        musicInstance.getTimelinePosition(out int pos);
+        if (pos == 0)
+        {
+            _useFallbackTime = true;
+            _startUnscaledTime = Time.unscaledTime;
+        }
+    }
+
+    public void SetSongLengthSeconds(float seconds)
+    {
+        int ms = Mathf.RoundToInt(seconds * 1000f);
+        BuildJudgeZones(ms);
+    }
+
+    public void SetTempo(float newBpm, float newStepsPerBeat = -1f, float? newHitWindowPercent = null)
+    {
+        if (newBpm > 0f) bpm = newBpm;
+        if (newStepsPerBeat > 0f) stepsPerBeat = newStepsPerBeat;
+        if (newHitWindowPercent.HasValue) hitWindowPercent = Mathf.Clamp01(newHitWindowPercent.Value);
+
+        RecalculateTiming();
+
+        if (musicDesc.isValid())
+        {
+            musicDesc.getLength(out int songLenMs);
+            if (songLenMs <= 0) songLenMs = 180_000;
+            BuildJudgeZones(songLenMs);
+        }
+    }
+
+    void RecalculateTiming()
+    {
+        // 120 BPM ê³ ì •ìœ¼ë¡œ ì“°ë ¤ë©´ useFmodTempoë¥¼ êº¼ë‘ê³  bpm=120, stepsPerBeat=1 ìœ ì§€
+        float basisBpm = (useFmodTempo && _lastTempoFromFmod > 0f) ? _lastTempoFromFmod : bpm;
+
+        float stepIntervalSec = 60f / Mathf.Max(1e-4f, basisBpm * stepsPerBeat);
+        intervalMs = Mathf.RoundToInt(stepIntervalSec * 1000f);
+        float hitSec = stepIntervalSec * Mathf.Clamp01(hitWindowPercent);
+        hitRangeMs = Mathf.RoundToInt(hitSec * 1000f);
+    }
+
+    void BuildJudgeZones(int songLenMs)
+    {
+        onBeatZones.Clear();
+        offBeatZones.Clear();
+
+        for (int t = 0; t <= songLenMs; t += intervalMs)
+            onBeatZones.Add(new JudgeZone { startMs = t - hitRangeMs, endMs = t + hitRangeMs });
+
+        int offset = intervalMs / 2;
+        for (int t = offset; t <= songLenMs; t += intervalMs)
+            offBeatZones.Add(new JudgeZone { startMs = t - hitRangeMs, endMs = t + hitRangeMs });
     }
 
     void Update()
     {
-        if (!isInitialized) return;
+        if (!isInitialized || intervalMs <= 0) return;
 
-        // 1) Äİ¹é¿¡¼­ ´©ÀûµÈ ºñÆ® ½ÅÈ£¸¦ ¸ŞÀÎ½º·¹µå¿¡¼­ Ã³¸®
-        if (_pendingBeatCount > 0)
+        int t = GetTimelineMs();
+        int beatIndex = Mathf.FloorToInt(t / (float)intervalMs);
+
+        // OnBeat
+        if (beatIndex != _lastBeatIndex)
         {
-            _pendingBeatCount = 0;
+            _lastBeatIndex = beatIndex;
+            _offEmittedForThisBeat = false;
 
-            // Á¤¹Ú/¾ù¹Ú »óÅÂ °»½Å & ¿ÜºÎ ÀÌº¥Æ® ºê·ÎµåÄ³½ºÆ®
-            int now = GetFMODTimelineMs();
-            if (IsInZones(now, onBeatZones))
-            {
-                BeatState.Instance.CurrBeatState = BeatState.BeatType.OnBeat;
-                OnBeat?.Invoke();
-            }
-            else if (IsInZones(now, offBeatZones))
-            {
-                BeatState.Instance.CurrBeatState = BeatState.BeatType.OffBeat;
-                OffBeat?.Invoke();
-            }
-            else
-            {
-                BeatState.Instance.CurrBeatState = BeatState.BeatType.Miss;
-            }
+            OnBeat?.Invoke();
+            PulseAll();
+        }
 
-      
-            foreach (var p in pulseTargets)
-                if (p != null) p.Pulse();
+        // OffBeat
+        int halfPointMs = (_lastBeatIndex * intervalMs) + (intervalMs / 2);
+        if (!_offEmittedForThisBeat && t >= halfPointMs)
+        {
+            _offEmittedForThisBeat = true;
+            OffBeat?.Invoke();
         }
     }
 
-    private int GetFMODTimelineMs()
+    void PulseAll()
     {
-        if (musicInstance.isValid())
+        // null ë“¤ì–´ìˆì„ ìˆ˜ ìˆìœ¼ë‹ˆ í•œë²ˆ ì •ë¦¬
+        for (int i = pulseTargets.Count - 1; i >= 0; i--)
+        {
+            var p = pulseTargets[i];
+            if (p == null) { pulseTargets.RemoveAt(i); continue; }
+            p.Pulse();
+        }
+    }
+
+    int GetTimelineMs()
+    {
+        if (!_useFallbackTime && musicInstance.isValid())
         {
             musicInstance.getTimelinePosition(out int ms);
-            return ms;
+            if (ms > 0) return ms;
         }
-        return 0;
+
+        // fallback
+        return Mathf.RoundToInt((Time.unscaledTime - _startUnscaledTime) * 1000f);
     }
 
-    // Á¤¹Ú/¾ù¹Ú ¹üÀ§ Ã¼Å© µµ¿ì¹Ì
-    private static bool IsInZones(int t, List<JudgeZone> zones)
+    static bool IsInZone(int t, List<JudgeZone> zones)
     {
-        // ½Ã°£ ¼ø¼­´ë·Î Á¤·ÄµÇ¾î ÀÖÀ¸´Ï ¾Õ¿¡¼­ºÎÅÍ È®ÀÎ
-        for (int i = 0; i < zones.Count; i++)
+        foreach (var z in zones)
         {
-            var z = zones[i];
-            if (t < z.startMs) return false; // ¾ÆÁ÷ ÀÌ¸£´Ù ¡æ Á¶±â Á¾·á
-            if (t <= z.endMs) return true;   // ±¸°£ ¾È
+            if (t < z.startMs) return false;
+            if (t <= z.endMs) return true;
         }
         return false;
     }
 
-    // === FMOD ¿Àµğ¿À ½º·¹µå Äİ¹é
     [AOT.MonoPInvokeCallback(typeof(EVENT_CALLBACK))]
-    private static FMOD.RESULT TimelineCallback(EVENT_CALLBACK_TYPE type, IntPtr instancePtr, IntPtr parameterPtr)
+    static FMOD.RESULT TimelineBeatCallback(EVENT_CALLBACK_TYPE type, IntPtr inst, IntPtr param)
     {
-        if (type == EVENT_CALLBACK_TYPE.TIMELINE_BEAT)
+        if (type == EVENT_CALLBACK_TYPE.TIMELINE_BEAT && Instance != null && param != IntPtr.Zero)
         {
-            // ¸ŞÀÎ ÀÎ½ºÅÏ½º¿¡ ½ÅÈ£¸¸ ³²±è
-            if (Instance != null) Instance._pendingBeatCount++;
+            var props = Marshal.PtrToStructure<TimelineBeatProperties>(param);
+            Instance._lastTempoFromFmod = props.tempo;
+            if (Instance.useFmodTempo) Instance.RecalculateTiming();
         }
         return FMOD.RESULT.OK;
     }
@@ -161,9 +241,17 @@ public class BeatManager : MonoBehaviour
             musicInstance.release();
         }
     }
-
-    // (¿øÇÏ¸é ¿ÜºÎ¿¡¼­ Á÷Á¢ ¹°¾îº¸°Ô ÇïÆÛ Á¦°ø)
-    public bool IsOnBeatNow() => IsInZones(GetFMODTimelineMs(), onBeatZones);
-    public bool IsOffBeatNow() => IsInZones(GetFMODTimelineMs(), offBeatZones);
+    public void RegisterPulseTarget(PulseToBeat p)
+    {
+        if (p == null) return;
+        if (!pulseTargets.Contains(p)) pulseTargets.Add(p);
+    }
+    public void UnregisterPulseTarget(PulseToBeat p)
+    {
+        if (p == null) return;
+        pulseTargets.Remove(p);
+    }
+    // ì™¸ë¶€ íŒì •ìš©
+    public bool IsOnBeatNow() => IsInZone(GetTimelineMs(), onBeatZones);
+    public bool IsOffBeatNow() => IsInZone(GetTimelineMs(), offBeatZones);
 }
-
