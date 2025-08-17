@@ -3,63 +3,111 @@ using UnityEngine;
 
 public class CounterManager : MonoBehaviour
 {
-    [Header("Window")]
-    [SerializeField] float windowDuration = 0.35f;
-    [SerializeField] float cooldown = 0.5f;
-    [SerializeField] bool requireOffBeat = true; // 엇박에만 성공
+    [Header("Timing")]
+    [SerializeField] private float windowDuration = 0.35f;   // 판정창 길이
+    [SerializeField] private float cooldown = 0.50f;         // 성공/실패 후 잠금 시간
+    [SerializeField] private bool requireOffBeat = true;     // 엇박만 허용 여부
 
+    [Header("Behavior")]
+    [SerializeField] private bool showHints = true;
+
+    public bool ShowHints => showHints;
     public float WindowDuration => windowDuration;
+    public bool IsWindowOpen => _windowOpen;
+    public bool IsCountering => _busy;
 
-    public event Action OnCounterOpen;
+    public event Action OnCounterHintOpen;
+    public event Action<float> OnWindowOpen;
     public event Action OnCounterSuccess;
     public event Action OnCounterFail;
 
-    bool _window;
-    bool _busy;
-    float _endTime;
+    private bool _windowOpen;
+    private bool _busy;
+    private float _windowEndTime;
 
+    public void SetShowHints(bool v) => showHints = v;
+
+    /// <summary>힌트 → 실제 판정창이 열릴 시간을 예약</summary>
+    public void PreHint(float leadSeconds = 0.25f)
+    {
+        if (!showHints || _busy) return;
+
+        OnCounterHintOpen?.Invoke();
+
+        if (leadSeconds > 0f)
+            Invoke(nameof(OpenWindowInternal), leadSeconds);
+        else
+            OpenWindowInternal();
+    }
+
+    /// <summary>즉시 판정창 오픈 요청 (예: Phase2 보스 직접 호출)</summary>
     public void OpenWindow(float duration = -1f)
     {
         if (_busy) return;
 
-        if (duration > 0f) windowDuration = duration;
-        _window = true;
-        _endTime = Time.time + windowDuration;
-        OnCounterOpen?.Invoke();
+        if (duration > 0f)
+            windowDuration = duration;
+
+        OpenWindowInternal();
     }
 
-    public void TryCounter()
+    private void OpenWindowInternal()
     {
-        if (!_window) { Fail(); return; }
+        if (_busy) return;
 
-        // 엇박만 허용하고 싶으면 여기서 체크
-        if (requireOffBeat && BeatState.Instance.CurrBeatState != BeatState.BeatType.OffBeat)
+        _windowOpen = true;
+        _windowEndTime = Time.unscaledTime + windowDuration;
+        OnWindowOpen?.Invoke(windowDuration);
+    }
+
+    /// <summary>플레이어가 반응 시도 → 타이밍 판정</summary>
+    public bool TryCounter()
+    {
+        if (!_windowOpen)
         {
-            Fail(); return;
+            Fail();
+            return false;
+        }
+
+        if (requireOffBeat && BeatManager.Instance && !BeatManager.Instance.IsOffBeatNow())
+        {
+            Fail();
+            return false;
         }
 
         Success();
+        return true;
     }
 
-    void Update()
+    private void Update()
     {
-        if (_window && Time.time > _endTime)
+        if (_windowOpen && Time.unscaledTime >= _windowEndTime)
+        {
             Fail();
+        }
     }
 
-    void Success()
+    private void Success()
     {
-        _window = false; _busy = true;
+        EndCounterWindow();
         OnCounterSuccess?.Invoke();
-        Invoke(nameof(Ready), cooldown);
     }
 
-    void Fail()
+    private void Fail()
     {
-        _window = false; _busy = true;
+        EndCounterWindow();
         OnCounterFail?.Invoke();
-        Invoke(nameof(Ready), cooldown);
     }
 
-    void Ready() => _busy = false;
+    private void EndCounterWindow()
+    {
+        _windowOpen = false;
+        _busy = true;
+        Invoke(nameof(ResetState), cooldown);
+    }
+
+    private void ResetState()
+    {
+        _busy = false;
+    }
 }

@@ -1,118 +1,111 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
-using System;
 
 public class PlayerInput : MonoBehaviour
 {
-    private int posIndex = 1; // 현재 위치 인덱스 0(왼쪽), 1(가운데), 2(오른쪽)
-    public List<Transform> positions; // 라인(플레이어가 이동할 위치) 담을 리스트
-    public static event Action AttackEvent; // 공격시 발동하는 이벤트
-    public GameObject gun;
-    public List<Transform> gunPositions;
-    [SerializeField] private CounterManager counterManager; 
+    [Header("Lane Move")]
+    [SerializeField] private Transform[] positions;   // [0]=왼, [1]=중앙, [2]=오른쪽
+    [SerializeField] private float moveDuration = 0.2f;
+
+    [Header("Attack")]
+    [SerializeField] private PlayerAttack attack;
+    [SerializeField] private KeyCode attackKey = KeyCode.Space;
+
+    [Header("Counter")]
+    [SerializeField] private CounterManager counterManager;
+    [SerializeField] private KeyCode counterKey = KeyCode.K;
+
+    [Header("Beat Input Window")]
+    [SerializeField] private float inputWindow = 0.12f;   // 이벤트 후 입력 허용 시간(초, unscaled)
+
+    [SerializeField] private CounterVFX counterVFX;
+
+
+    private int posIndex = 1;
+
+    private bool onOpen, offOpen;
+    private bool onConsumed, offConsumed;
+    private float onCloseAt, offCloseAt;
+
+    void Awake()
+    {
+        if (!counterManager) counterManager = FindObjectOfType<CounterManager>();
+        if (!attack) attack = FindObjectOfType<PlayerAttack>();
+    }
+
+    void OnEnable()
+    {
+        BeatManager.OnBeat += OpenOn;
+        BeatManager.OffBeat += OpenOff;
+    }
+
+    void OnDisable()
+    {
+        BeatManager.OnBeat -= OpenOn;
+        BeatManager.OffBeat -= OpenOff;
+    }
+
     void Update()
     {
-        // 왼쪽 이동
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
+        if (onOpen && Time.unscaledTime > onCloseAt) onOpen = false;
+        if (offOpen && Time.unscaledTime > offCloseAt) offOpen = false;
 
-            if (posIndex > 0 && (currentBeat == BeatState.BeatType.OnBeat))
+        // 정박: 이동/공격
+        if (onOpen && !onConsumed)
+        {
+            if (Input.GetKeyDown(KeyCode.T))
             {
-                transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-                Debug.Log("Move Left");
-                if (posIndex == 1)
+                if (counterVFX != null)
                 {
-                    //gun.transform.position = gunPositions[1].position;
+                    Debug.Log("[Test] CounterVFX.PlayVFX() 실행됨");
+                    counterVFX.SendMessage("PlayVFX"); // 또는 counterVFX.PlayVFX(); 이었을 수도 있음
                 }
             }
-        }
-
-        // 오른쪽 이동
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
-
-            if (posIndex < 2 && (currentBeat == BeatState.BeatType.OnBeat))
+            if (Input.GetKeyDown(KeyCode.A) && posIndex > 0)
             {
-                transform.DOMove(positions[++posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-                Debug.Log("Move Right");
-                if (posIndex == 2)
-                {
-                    //gun.transform.position = gunPositions[0].position;
-                }
+                onConsumed = true;
+                MoveTo(posIndex - 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.D) && posIndex < 2)
+            {
+                onConsumed = true;
+                MoveTo(posIndex + 1);
+            }
+            else if (Input.GetKeyDown(attackKey))
+            {
+                onConsumed = true;
+                if (attack) attack.Attack();
             }
         }
 
-        // 공격
-        if (Input.GetKeyDown(KeyCode.Space))
+        // 엇박: 카운터
+        if (offOpen && !offConsumed)
         {
-            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
-
-            if(currentBeat == BeatState.BeatType.OnBeat)
+            if (Input.GetKeyDown(counterKey))
             {
-                AttackEvent?.Invoke();
-                Debug.Log("Attack Triggered");
-            }
-
-        }
-
-        // 회피
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            BeatState.BeatType currentBeat = BeatState.Instance.CurrBeatState;
-
-            if (currentBeat == BeatState.BeatType.OnBeat)
-            {
-                Debug.Log("Evade Triggered");
+                offConsumed = true;
+                bool ok = counterManager && counterManager.TryCounter();
+                Debug.Log(ok ? "[Counter] SUCCESS" : "[Counter] FAIL");
             }
         }
+    }
 
-        // 카운터 키
-        if (Input.GetKeyDown(KeyCode.K))
-            counterManager?.TryCounter();
-        //// 왼쪽 이동
-        //if (Input.GetKeyDown(KeyCode.A))
-        //{
-        //    if (posIndex > 0 && BeatManager.Instance.IsOnBeatNow())
-        //    {
-        //        transform.DOMove(positions[--posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-        //        Debug.Log("Move Left");
-        //        if (posIndex == 1)
-        //        {
-        //            gun.transform.position = gunPositions[1].position;
-        //        }
+    void OpenOn()
+    {
+        onOpen = true; onConsumed = false;
+        onCloseAt = Time.unscaledTime + inputWindow;
+    }
 
-        //    }
-        //}
+    void OpenOff()
+    {
+        offOpen = true; offConsumed = false;
+        offCloseAt = Time.unscaledTime + inputWindow;
+    }
 
-        //// 오른쪽 이동
-        //if (Input.GetKeyDown(KeyCode.D))
-        //{
-        //    if (posIndex < 2 && BeatManager.Instance.IsOnBeatNow())
-        //    {
-        //        transform.DOMove(positions[++posIndex].position, 0.2f).SetEase(Ease.InOutQuad);
-        //        Debug.Log("Move Right"); 
-        //        if (posIndex == 2)
-        //        {
-        //            gun.transform.position = gunPositions[0].position;
-        //        }
-        //    }
-        //}
-
-        //// 공격
-        //if (Input.GetKeyDown(KeyCode.Space) && BeatManager.Instance.IsOnBeatNow())
-        //{
-        //    AttackEvent?.Invoke();
-        //    Debug.Log("Attack Triggered");
-        //}
-
-        //// 회피
-        //if (Input.GetKeyDown(KeyCode.LeftShift) && BeatManager.Instance.IsOnBeatNow())
-        //{
-        //    Debug.Log("Evade Triggered");
-        //}
+    void MoveTo(int next)
+    {
+        posIndex = next;
+        transform.DOKill();
+        transform.DOMove(positions[posIndex].position, moveDuration).SetEase(Ease.InOutQuad);
     }
 }

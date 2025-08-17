@@ -1,43 +1,33 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class HandleCounter : MonoBehaviour
 {
-    [SerializeField] private GameObject counterUI;
+    [SerializeField] private CounterManager mgr;
+    [Header("Test Keys")]
+    [SerializeField] private KeyCode hintKey = KeyCode.H;
+    [SerializeField] private KeyCode openKey = KeyCode.J;
 
-    private void Start()
+    void Awake()
     {
-        counterUI.SetActive(false);
-        StartCoroutine(SpawnCounterRoutine());
+        if (!mgr) mgr = FindObjectOfType<CounterManager>();
     }
 
-    private void Update()
+    void Update()
     {
-        // 괄호로 조건 명확히
-        if ((Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)) &&
-            BeatState.Instance.CurrBeatState == BeatState.BeatType.OffBeat)
+        if (!mgr) return;
+
+        if (Input.GetKeyDown(hintKey))
         {
-            counterUI.SetActive(false);
+            // 힌트 띄우고 0.3초 후 실제 창 오픈
+            mgr.PreHint(0.3f);
+            Debug.Log("[Counter] PreHint called");
         }
-    }
 
-    private IEnumerator SpawnCounterRoutine()
-    {
-        yield return new WaitForSeconds(2.0f);
-        ActivateCounter();
-
-        for (int i = 0; i < 4; i++)
+        if (Input.GetKeyDown(openKey))
         {
-            yield return new WaitForSeconds(4.0f);
-            ActivateCounter();
+            // 바로 판정창만 열기(예: Phase2)
+            mgr.OpenWindow(mgr.WindowDuration);
+            Debug.Log("[Counter] OpenWindow called");
         }
-    }
-
-    private void ActivateCounter()
-    {
-        // 필요한 경우 리셋이나 애니메이션도 추가 가능
-        counterUI.SetActive(true);
-        Debug.Log("카운터 UI 활성화");
     }
 }
