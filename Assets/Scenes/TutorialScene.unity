@@ -4493,16 +4493,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6ec1936feb97814b8b3100f98d2ca5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bpm: 120
-  stepsPerBeat: 1
-  hitRangePercentage: 0.25
-  musicEventPath:
+  musicEvent:
     Guid:
       Data1: -457861438
       Data2: 1080772104
       Data3: -1958469233
       Data4: 1433621641
     Path: event:/Music_oneTempo
+  bpm: 120
+  stepsPerBeat: 1
+  hitWindowPercent: 0.25
+  useFmodTempo: 0
   pulseTargets: []
 --- !u!1 &1090408315
 GameObject:
@@ -6457,7 +6458,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee8311c3e1d5d1a4e8f549c9d22f570f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  counterUI: {fileID: 0}
+  mgr: {fileID: 0}
+  hintKey: 104
+  openKey: 106
 --- !u!4 &1556322537
 Transform:
   m_ObjectHideFlags: 0
