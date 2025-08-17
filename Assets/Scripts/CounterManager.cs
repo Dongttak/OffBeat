@@ -23,7 +23,7 @@ public class CounterManager : MonoBehaviour
     public float WindowDuration => windowDuration;
     public bool IsWindowOpen => _windowOpen;
     public bool IsCountering => _busy;
-
+    
     public event Action OnCounterHintOpen;     // 힌트(!) 표시
     public event Action<float> OnWindowOpen;          // 판정창 오픈(duration)
     public event Action OnCounterSuccess;

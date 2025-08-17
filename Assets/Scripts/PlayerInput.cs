@@ -24,6 +24,7 @@ public class PlayerInput : MonoBehaviour
 
     [Header("Input Buffer (놓치면 다음 박자에 실행)")]
     [Tooltip("버퍼 유지 시간(초). 이 시간 안에 들어온 입력은 다음 박자에 자동 실행")]
+
     [SerializeField] private float bufferHold = 0.25f;
 
     [Header("Optional test VFX")]
@@ -137,7 +138,6 @@ public class PlayerInput : MonoBehaviour
     bool TryConsumeOnBeatBuffered()
     {
         bool consumed = false;
-
         // 이동 입력 우선 → 그 다음 공격 (우선순위는 취향대로 바꿔도 됨)
         if (!consumed && bufLeft.IsValid(bufferHold) && posIndex > 0) { MoveTo(posIndex - 1); bufLeft.Clear(); consumed = true; }
         if (!consumed && bufRight.IsValid(bufferHold) && posIndex < 2) { MoveTo(posIndex + 1); bufRight.Clear(); consumed = true; }

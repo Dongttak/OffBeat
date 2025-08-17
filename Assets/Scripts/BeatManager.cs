@@ -16,6 +16,7 @@ public class BeatManager : MonoBehaviour
     private EVENT_CALLBACK beatCallback;
 
     [Header("Tempo Settings")]
+
     [Tooltip("원하는 체감 BPM. useFmodTempo를 끄면 이 값 기준으로 OnBeat/OffBeat이 발생")]
     [SerializeField] private float bpm = 120f;
 
@@ -56,7 +57,7 @@ public class BeatManager : MonoBehaviour
     public static event Action OffBeat;
 
     public bool IsInitialized => isInitialized;
-
+    
     // FMOD 콜백에서 내려주는 속성
     [StructLayout(LayoutKind.Sequential)]
     struct TimelineBeatProperties
@@ -88,7 +89,6 @@ public class BeatManager : MonoBehaviour
         musicInstance = RuntimeManager.CreateInstance(musicEvent);
         musicDesc = RuntimeManager.GetEventDescription(musicEvent);
 
-        // 기본 곡 길이
         int songLenMs = 180_000;
         if (musicDesc.isValid())
         {
@@ -105,7 +105,7 @@ public class BeatManager : MonoBehaviour
 
         musicInstance.start();
         isInitialized = true;
-
+        
         // FMOD 타임라인이 0만 줄 경우 대비
         musicInstance.getTimelinePosition(out int pos);
         if (pos == 0)
