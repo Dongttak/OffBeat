@@ -1,43 +1,33 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class HandleCounter : MonoBehaviour
 {
-    [SerializeField] private GameObject counterUI;
+    [SerializeField] private CounterManager mgr;
+    [Header("Test Keys")]
+    [SerializeField] private KeyCode hintKey = KeyCode.H;
+    [SerializeField] private KeyCode openKey = KeyCode.J;
 
-    private void Start()
+    void Awake()
     {
-        counterUI.SetActive(false);
-        StartCoroutine(SpawnCounterRoutine());
+        if (!mgr) mgr = FindObjectOfType<CounterManager>();
     }
 
-    private void Update()
+    void Update()
     {
-        // °ıÈ£·Î Á¶°Ç ¸íÈ®È÷
-        if ((Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)) &&
-            BeatState.Instance.CurrBeatState == BeatState.BeatType.OffBeat)
+        if (!mgr) return;
+
+        if (Input.GetKeyDown(hintKey))
         {
-            counterUI.SetActive(false);
+            // íŒíŠ¸ ë„ìš°ê³  0.3ì´ˆ í›„ ì‹¤ì œ ì°½ ì˜¤í”ˆ
+            mgr.PreHint(0.3f);
+            Debug.Log("[Counter] PreHint called");
         }
-    }
 
-    private IEnumerator SpawnCounterRoutine()
-    {
-        yield return new WaitForSeconds(2.0f);
-        ActivateCounter();
-
-        for (int i = 0; i < 4; i++)
+        if (Input.GetKeyDown(openKey))
         {
-            yield return new WaitForSeconds(4.0f);
-            ActivateCounter();
+            // ë°”ë¡œ íŒì •ì°½ë§Œ ì—´ê¸°(ì˜ˆ: Phase2)
+            mgr.OpenWindow(mgr.WindowDuration);
+            Debug.Log("[Counter] OpenWindow called");
         }
-    }
-
-    private void ActivateCounter()
-    {
-        // ÇÊ¿äÇÑ °æ¿ì ¸®¼ÂÀÌ³ª ¾Ö´Ï¸ŞÀÌ¼Çµµ Ãß°¡ °¡´É
-        counterUI.SetActive(true);
-        Debug.Log("Ä«¿îÅÍ UI È°¼ºÈ­");
     }
 }
