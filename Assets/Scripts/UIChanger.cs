@@ -10,12 +10,19 @@ public class UIChanger : MonoBehaviour
     public void OnClickStart_tutorial()
     {
         //SoundManager.instance.PlayClickSound();
+        Time.timeScale = 1f;
         SceneManager.LoadScene("TutorialScene");
+    }
+    public void OnClickStart_Title()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("TitleScene");
     }
 
     public void OnClickStart_main()
     {
         //SoundManager.instance.PlayClickSound();
+        Time.timeScale = 1f;
         SceneManager.LoadScene("InGame");
     }
 

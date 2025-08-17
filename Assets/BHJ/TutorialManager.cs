@@ -7,16 +7,22 @@ public class TutorialManager : MonoBehaviour
     public enum Step { Move, Attack, Special, Done }
     [Header("Order & Targets")]
     [SerializeField] private Step startStep = Step.Move;
-    [SerializeField] private int moveSuccessTarget = 5;
-    [SerializeField] private int attackSuccessTarget = 5;
+    [SerializeField] private int moveSuccessTarget = 5; // 이동 성공 목표
+    [SerializeField] private int attackSuccessTarget = 5;   // 공격 성공 목표
     [SerializeField] private int specialSuccessTarget = 3; // 구현 대기 시 0으로 두면 스킵됨
 
     [Header("UI")]
+    [SerializeField] private GameObject TutorialUIGroup;    // 튜토리얼 UI(그룹)
     [SerializeField] private TextMeshProUGUI titleText;     // 단계 안내
     [SerializeField] private TextMeshProUGUI guideText;     // 키 가이드
     [SerializeField] private TextMeshProUGUI counterText;   // 성공/목표
     [SerializeField] private TextMeshProUGUI feedbackText;  // GOOD / MISS
+    [SerializeField] private TextMeshProUGUI tipText;       // 팁
 
+    [Header("Prompt UI (Press Any Key)")]
+    [SerializeField] private GameObject promptGroup;        // 안내 패널(그룹)
+    [SerializeField] private TextMeshProUGUI promptTitle;   // 안내 제목
+    [SerializeField] private TextMeshProUGUI promptBody;    // 안내 본문
     [Header("Key Bindings")]
     [SerializeField] private KeyCode moveLeftKey = KeyCode.A;
     [SerializeField] private KeyCode moveRightKey = KeyCode.D;
@@ -30,6 +36,11 @@ public class TutorialManager : MonoBehaviour
 
     private Step _step;
     private int _successCount;
+    private int _misscount = 0; // 미스 카운트
+    private bool isWaitingPrompt = false; // 프롬프트에서 아무 키 입력 대기 중인지
+
+    public PlayerInput playerInput;
+    public GameManager gameManager;
 
     void Start()
     {
@@ -39,6 +50,18 @@ public class TutorialManager : MonoBehaviour
 
     void Update()
     {
+        if (isWaitingPrompt)
+        {
+            TutorialUIGroup.SetActive(false);
+            gameManager.PauseGame();
+            if (Input.anyKeyDown)
+            {
+                gameManager.ResumeGame();
+                HidePrompt();
+                SetStep(_step); // 실제 단계 시작
+            }
+            return;
+        }
         if (_step == Step.Done) return;
 
         switch (_step)
@@ -65,7 +88,10 @@ public class TutorialManager : MonoBehaviour
 
         UpdateCounter(moveSuccessTarget);
         if (_successCount >= moveSuccessTarget)
-            Advance(Step.Attack);
+        {
+            // 다음 단계로 넘어가기 전 안내 표시
+            ShowPrompt(Step.Attack);
+        }
     }
 
     void HandleAttackStep()
@@ -75,18 +101,23 @@ public class TutorialManager : MonoBehaviour
 
         UpdateCounter(attackSuccessTarget);
         if (_successCount >= attackSuccessTarget)
-            Advance(specialSuccessTarget > 0 ? Step.Special : Step.Done);
+        {
+            var next = (specialSuccessTarget > 0) ? Step.Special : Step.Done;
+            ShowPrompt(next);
+        }
     }
 
     void HandleSpecialStep()
     {
-        // 임시: 공격키를 특수키 대용으로 사용
+        // Special은 '엇박' 판정으로 진행
         if (Input.GetKeyDown(attackKey))
             TryJudge(OnBeatCheck(), onSuccess: () => { _successCount++; OnSpecialSuccess?.Invoke(); });
 
         UpdateCounter(specialSuccessTarget);
         if (_successCount >= specialSuccessTarget)
-            Advance(Step.Done);
+        {
+            ShowPrompt(Step.Done);
+        }
     }
 
     // === Helpers ===
@@ -101,12 +132,19 @@ public class TutorialManager : MonoBehaviour
     {
         if (isOnBeat)
         {
+            _misscount = 0; // 리셋
+            tipText?.gameObject.SetActive(false);
             onSuccess?.Invoke();
             ShowFeedback("GOOD", Color.cyan);
         }
         else
         {
+            _misscount++;
             ShowFeedback("MISS", Color.red);
+            if (_misscount >= 3)
+            {
+                ShowTip("주변 배경을 잘 살펴보세요!", Color.red);
+            }
         }
     }
 
@@ -118,23 +156,23 @@ public class TutorialManager : MonoBehaviour
         switch (s)
         {
             case Step.Move:
-                SetUI("이동 튜토리얼", $"정박에 맞춰 [{moveLeftKey}] / [{moveRightKey}] 이동 입력", 0);
+                SetUI("이동", $"[{moveLeftKey}] / [{moveRightKey}] 로 이동", 0);
                 break;
             case Step.Attack:
-                SetUI("공격 튜토리얼", $"정박에 맞춰 [{attackKey}] 공격 입력", 0);
+                SetUI("공격", $"[{attackKey}] 로 공격", 0);
                 break;
             case Step.Special:
-                SetUI("엇박 카운터 튜토리얼", $"엇박에 맞춰서! [{attackKey}]", 0);
+                SetUI("엇박 카운터", $"[{attackKey}]", 0);
                 break;
             case Step.Done:
-                SetUI("튜토리얼 완료", "좋아요! 이제 실전에 들어가보죠.", 0, hideCounter:true);
+                SetUI("튜토리얼 완료", "좋아요! 이제 실전에 들어가보죠.", 0, hideCounter: true);
                 break;
         }
     }
 
     void Advance(Step next) => SetStep(next);
 
-    void SetUI(string title, string guide, int current, bool hideCounter=false)
+    void SetUI(string title, string guide, int current, bool hideCounter = false)
     {
         titleText?.SetText(title);
         guideText?.SetText(guide);
@@ -154,12 +192,53 @@ public class TutorialManager : MonoBehaviour
         feedbackText.color = c;
         feedbackText.SetText(msg);
         StopAllCoroutines();
-        StartCoroutine(ClearFeedbackAfter(0.5f));
+    }
+    void ShowTip(string msg, Color c)
+    {
+        tipText?.gameObject.SetActive(true);
+        if (tipText == null) return;
+        tipText.color = c;
+        tipText.SetText(msg);
+    }
+    void ShowPrompt(Step stepToStart)
+    {
+        // 다음에 시작할 스텝을 먼저 기록
+        _step = stepToStart;
+        isWaitingPrompt = true;
+
+        if (promptGroup != null) promptGroup.SetActive(true);
+
+        // 프롬프트 문구 구성
+        switch (stepToStart)
+        {
+            case Step.Move:
+                promptTitle?.SetText("이동 튜토리얼");
+                promptBody?.SetText($"정박에 맞춰 [{moveLeftKey}] / [{moveRightKey}] 를 눌러 이동합니다.\n아무 키나 누르면 시작합니다.");
+                break;
+            case Step.Attack:
+                promptTitle?.SetText("공격 튜토리얼");
+                promptBody?.SetText($"정박에 맞춰 [{attackKey}] 를 눌러 공격합니다.\n아무 키나 누르면 시작합니다.");
+                break;
+            case Step.Special:
+                promptTitle?.SetText("카운터 튜토리얼");
+                promptBody?.SetText($"엇박 타이밍에 [{attackKey}] 를 눌러 카운터합니다.\n아무 키나 누르면 시작합니다.");
+                break;
+            case Step.Done:
+                promptTitle?.SetText("튜토리얼 완료");
+                promptBody?.SetText("좋아요! 이제 실전에 들어가보죠.\n아무 키나 누르면 종료합니다.");
+                break;
+        }
     }
 
-    System.Collections.IEnumerator ClearFeedbackAfter(float t)
+    void HidePrompt()
     {
-        yield return new WaitForSeconds(t);
-        if (feedbackText != null) feedbackText.SetText("");
+        isWaitingPrompt = false;
+        if (promptGroup != null) promptGroup.SetActive(false);
+
+        // Done인 경우엔 실제 단계 시작 대신 UI만 남기고 종료
+        if (_step == Step.Done)
+        {
+            SetStep(Step.Done);
+        }
     }
 }
