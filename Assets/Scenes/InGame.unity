@@ -243,10 +243,11 @@ MonoBehaviour:
   minDistance: 6
   maxDistance: 30
   manualOffset: {x: 0, y: 2, z: -12}
+  aimYOffset: 0
   boundsLayer:
     serializedVersion: 2
     m_Bits: 4294967295
-  requiredTag: DJ.Kong
+  requiredTag: Boss
   freezeBoundsDuringShot: 1
   shakersToDisable: []
   focusInTime: 0.22
