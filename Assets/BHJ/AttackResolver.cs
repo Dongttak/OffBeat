@@ -34,7 +34,7 @@ public class AttackResolver : MonoBehaviour
             if (summon != null)
             {
                 summon.Hit(1);
-                return; // ✅ 여기서 종료
+                return; // 여기서 종료
             }
 
             // 2) 그 외 IHittable (Enemy)
@@ -52,7 +52,7 @@ public class AttackResolver : MonoBehaviour
     {
         if (!fireOrigin) return;
         Gizmos.color = Color.cyan;
-        Gizmos.DrawRay(fireOrigin.position, fireOrigin.forward * range); // ✅
+        Gizmos.DrawRay(fireOrigin.position, fireOrigin.forward * range); 
     }
 #endif
 }

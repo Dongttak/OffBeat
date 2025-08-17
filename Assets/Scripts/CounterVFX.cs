@@ -23,8 +23,8 @@ public class CounterVFX : MonoBehaviour
     [SerializeField] private float aimYOffset = 0f;         // 보스 중심 대비 위(+)/아래(-) 보정
 
     [Header("Bounds Filter (for Auto Framing)")]
-    [SerializeField] private LayerMask boundsLayer = ~0;     // 보스 레이어만 켜두면 안정적
-    [SerializeField] private string requiredTag = "";        // 보스 렌더러에 "Boss" 태그가 있다면 지정
+    [SerializeField] private LayerMask boundsLayer = ~0;    // 보스 레이어만 켜두면 안정적
+    [SerializeField] private string requiredTag = "";       // 보스 렌더러에 "Boss" 태그가 있다면 지정
 
     [Header("Stabilize Shot")]
     [SerializeField] private bool freezeBoundsDuringShot = true; // 연출 중 바운드/중심 고정
@@ -39,10 +39,6 @@ public class CounterVFX : MonoBehaviour
     [SerializeField] private float fovInTime = 0.12f;
     [SerializeField] private float fovOutTime = 0.2f;
 
-    [Header("Slow Motion (Global)")]
-    [SerializeField] private float slowScale = 0.25f;
-    [SerializeField] private float slowDuration = 0.9f; // 현재는 holdTime으로 충분해서 옵션성
-
     [Header("(Optional) Pause Camera Controllers")]
     [SerializeField] private Behaviour[] cameraControllersToDisable;
 
@@ -50,7 +46,6 @@ public class CounterVFX : MonoBehaviour
     [SerializeField] private bool enableTestKey = true;
     [SerializeField] private KeyCode testKey = KeyCode.T;
 
-    float defaultFixedDelta;
     Coroutine running;
 
     // 캐시(안정화용)
@@ -62,7 +57,6 @@ public class CounterVFX : MonoBehaviour
         if (!counterManager) counterManager = FindObjectOfType<CounterManager>();
         if (!targetCamera) targetCamera = Camera.main;
         if (!bossRoot && bossTarget) bossRoot = bossTarget.root;
-        defaultFixedDelta = Time.fixedDeltaTime;
     }
 
     void OnEnable()
@@ -120,12 +114,12 @@ public class CounterVFX : MonoBehaviour
         {
             var b = freezeBoundsDuringShot ? _cachedBounds : CalcBoundsFiltered(bossRoot);
             float height = Mathf.Max(0.01f, b.size.y);
-            float width  = Mathf.Max(0.01f, b.size.x);
+            float width = Mathf.Max(0.01f, b.size.x);
 
             float vfovRad = targetFov * Mathf.Deg2Rad;
-            float aspect  = Mathf.Max(0.01f, targetCamera.aspect);
+            float aspect = Mathf.Max(0.01f, targetCamera.aspect);
             float hfovRad = 2f * Mathf.Atan(Mathf.Tan(vfovRad * 0.5f) * aspect);
-            float fovRad  = fitByHeight ? vfovRad : hfovRad;
+            float fovRad = fitByHeight ? vfovRad : hfovRad;
 
             float sizeToFit = fitByHeight ? height : width;
             float dist = (sizeToFit * 0.5f * framingPadding) / Mathf.Tan(fovRad * 0.5f);
@@ -156,10 +150,6 @@ public class CounterVFX : MonoBehaviour
             Vector3 tp = bossTarget.position;
             focusPos = new Vector3(tp.x, tp.y + aimYOffset, tp.z);
         }
-
-        // 슬로모션 시작
-        Time.timeScale = slowScale;
-        Time.fixedDeltaTime = defaultFixedDelta * slowScale;
 
         // 이동/회전 + 줌인
         float t = 0f;
@@ -197,12 +187,12 @@ public class CounterVFX : MonoBehaviour
                     new Vector3(camTr.position.x, 0f, camTr.position.z),
                     new Vector3(focusPos.x, 0f, focusPos.z)
                 );
-                Vector3 toCam = camTr.position - new Vector3(focusPos.x, camTr.position.y, focusPos.z);
-                toCam.y = 0f;
+                Vector3 toCam2 = camTr.position - new Vector3(focusPos.x, camTr.position.y, focusPos.z);
+                toCam2.y = 0f;
 
-                if (toCam.sqrMagnitude > 1e-4f)
+                if (toCam2.sqrMagnitude > 1e-4f)
                 {
-                    Vector3 follow = new Vector3(focusPos.x, camTr.position.y, focusPos.z) + toCam.normalized * curDist;
+                    Vector3 follow = new Vector3(focusPos.x, camTr.position.y, focusPos.z) + toCam2.normalized * curDist;
                     camTr.position = Vector3.Lerp(camTr.position, follow, 0.15f);
                 }
 
@@ -215,10 +205,6 @@ public class CounterVFX : MonoBehaviour
 
             yield return null;
         }
-
-        // 슬로모션 해제
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = defaultFixedDelta;
 
         // 복귀
         float t2 = 0f;

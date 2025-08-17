@@ -5,29 +5,37 @@ public class CounterManager : MonoBehaviour
 {
     [Header("Timing")]
     [SerializeField] private float windowDuration = 0.35f;   // 판정창 길이
-    [SerializeField] private float cooldown = 0.50f;         // 성공/실패 후 잠금 시간
-    [SerializeField] private bool requireOffBeat = true;     // 엇박만 허용 여부
+    [SerializeField] private float cooldown = 0.50f;   // 성공/실패 후 잠금 시간
+    [SerializeField] private bool requireOffBeat = true;    // 엇박만 허용 여부
 
     [Header("Behavior")]
-    [SerializeField] private bool showHints = true;
+    [SerializeField] private bool showHints = true;          // 힌트(!) 사용 여부 (Phase1에서 true)
+
+    [Header("Debug / Test")]
+    [SerializeField] private bool enableTestKey = true;   // ← 테스트 키 사용
+    [SerializeField] private KeyCode testKey = KeyCode.T;
+    [Tooltip("테스트에서 힌트 후 실제 판정창까지 기다릴 시간(초)")]
+    [SerializeField] private float testLeadSeconds = 0.25f;
+    [Tooltip("테스트에서 실제 판정창 길이(초)")]
+    [SerializeField] private float testWindowSeconds = 0.35f;
 
     public bool ShowHints => showHints;
     public float WindowDuration => windowDuration;
     public bool IsWindowOpen => _windowOpen;
     public bool IsCountering => _busy;
 
-    public event Action OnCounterHintOpen;
-    public event Action<float> OnWindowOpen;
+    public event Action OnCounterHintOpen;     // 힌트(!) 표시
+    public event Action<float> OnWindowOpen;          // 판정창 오픈(duration)
     public event Action OnCounterSuccess;
     public event Action OnCounterFail;
 
-    private bool _windowOpen;
-    private bool _busy;
-    private float _windowEndTime;
+    bool _windowOpen;
+    bool _busy;
+    float _windowEndTime;
 
     public void SetShowHints(bool v) => showHints = v;
 
-    /// <summary>힌트 → 실제 판정창이 열릴 시간을 예약</summary>
+    /// <summary>보스 패턴 시작 시: 힌트(!) 띄우고, leadSeconds 후 자동으로 판정창 오픈</summary>
     public void PreHint(float leadSeconds = 0.25f)
     {
         if (!showHints || _busy) return;
@@ -40,21 +48,18 @@ public class CounterManager : MonoBehaviour
             OpenWindowInternal();
     }
 
-    /// <summary>즉시 판정창 오픈 요청 (예: Phase2 보스 직접 호출)</summary>
+    /// <summary>바로 판정창만 열고 싶을 때(Phase2)</summary>
     public void OpenWindow(float duration = -1f)
     {
         if (_busy) return;
 
-        if (duration > 0f)
-            windowDuration = duration;
-
+        if (duration > 0f) windowDuration = duration;
         OpenWindowInternal();
     }
 
-    private void OpenWindowInternal()
+    void OpenWindowInternal()
     {
         if (_busy) return;
-
         _windowOpen = true;
         _windowEndTime = Time.unscaledTime + windowDuration;
         OnWindowOpen?.Invoke(windowDuration);
@@ -64,50 +69,50 @@ public class CounterManager : MonoBehaviour
     public bool TryCounter()
     {
         if (!_windowOpen)
-        {
-            Fail();
-            return false;
-        }
+        { Fail(); return false; }
 
         if (requireOffBeat && BeatManager.Instance && !BeatManager.Instance.IsOffBeatNow())
-        {
-            Fail();
-            return false;
-        }
+        { Fail(); return false; }
 
-        Success();
-        return true;
+        Success(); return true;
     }
 
-    private void Update()
+    void Update()
     {
+        // 창 시간 초과
         if (_windowOpen && Time.unscaledTime >= _windowEndTime)
-        {
             Fail();
+
+        // ===== 테스트 트리거 =====
+        if (enableTestKey && Input.GetKeyDown(testKey))
+        {
+            // 힌트(!)만 쓰고 싶으면 PreHint만 호출,
+            // 바로 창만 보고 싶으면 OpenWindow(testWindowSeconds) 호출로 바꾸면 됩니다.
+            if (showHints)
+                PreHint(testLeadSeconds);      // 힌트 → testLeadSeconds 후 자동으로 창 오픈
+            else
+                OpenWindow(testWindowSeconds);  // Phase2처럼 즉시 창 오픈
         }
     }
 
-    private void Success()
+    void Success()
     {
         EndCounterWindow();
         OnCounterSuccess?.Invoke();
     }
 
-    private void Fail()
+    void Fail()
     {
         EndCounterWindow();
         OnCounterFail?.Invoke();
     }
 
-    private void EndCounterWindow()
+    void EndCounterWindow()
     {
         _windowOpen = false;
         _busy = true;
         Invoke(nameof(ResetState), cooldown);
     }
 
-    private void ResetState()
-    {
-        _busy = false;
-    }
+    void ResetState() => _busy = false;
 }
