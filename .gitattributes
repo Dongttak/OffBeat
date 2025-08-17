@@ -8,3 +8,7 @@
 [Tt]emp/     -diff -merge
 [Oo]bj/      -diff -merge
 [Bb]uild/    -diff -merge
+
+*.unity merge=unityyamlmerge eol=lf
+*.prefab merge=unityyamlmerge eol=lf
+*.asset merge=unityyamlmerge eol=lf
