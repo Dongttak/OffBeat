@@ -7,7 +7,7 @@ public class PlayerInput : MonoBehaviour
     public static event Action AttackEvent;
 
     [Header("Lane Move")]
-    [SerializeField] private Transform[] positions;   // [0]=¿Þ, [1]=Áß¾Ó, [2]=¿À¸¥ÂÊ
+    [SerializeField] private Transform[] positions;   // [0]=ì™¼, [1]=ì¤‘ì•™, [2]=ì˜¤ë¥¸ìª½
     [SerializeField] private float moveDuration = 0.2f;
 
     [Header("Attack")]
@@ -18,12 +18,13 @@ public class PlayerInput : MonoBehaviour
     [SerializeField] private CounterManager counterManager;
     [SerializeField] private KeyCode counterKey = KeyCode.K;
 
-    [Header("Beat Input Window (ÆÇÁ¤Ã¢ ±æÀÌ)")]
-    [Tooltip("OnBeat/OffBeat ÀÌº¥Æ® ÀÌÈÄ, Áï½Ã ÀÔ·ÂÀ» Çã¿ëÇÏ´Â ½Ã°£(ÃÊ, unscaled). 0.16 ~ 0.20 Á¤µµ ÃßÃµ")]
+    [Header("Beat Input Window (íŒì •ì°½ ê¸¸ì´)")]
+    [Tooltip("OnBeat/OffBeat ì´ë²¤íŠ¸ ì´í›„, ì¦‰ì‹œ ìž…ë ¥ì„ í—ˆìš©í•˜ëŠ” ì‹œê°„(ì´ˆ, unscaled). 0.16 ~ 0.20 ì •ë„ ì¶”ì²œ")]
     [SerializeField] private float inputWindow = 0.18f;
 
-    [Header("Input Buffer (³õÄ¡¸é ´ÙÀ½ ¹ÚÀÚ¿¡ ½ÇÇà)")]
-    [Tooltip("¹öÆÛ À¯Áö ½Ã°£(ÃÊ). ÀÌ ½Ã°£ ¾È¿¡ µé¾î¿Â ÀÔ·ÂÀº ´ÙÀ½ ¹ÚÀÚ¿¡ ÀÚµ¿ ½ÇÇà")]
+    [Header("Input Buffer (ë†“ì¹˜ë©´ ë‹¤ìŒ ë°•ìžì— ì‹¤í–‰)")]
+    [Tooltip("ë²„í¼ ìœ ì§€ ì‹œê°„(ì´ˆ). ì´ ì‹œê°„ ì•ˆì— ë“¤ì–´ì˜¨ ìž…ë ¥ì€ ë‹¤ìŒ ë°•ìžì— ìžë™ ì‹¤í–‰")]
+
     [SerializeField] private float bufferHold = 0.25f;
 
     [Header("Optional test VFX")]
@@ -31,16 +32,16 @@ public class PlayerInput : MonoBehaviour
 
     private int posIndex = 1;
 
-    // Ã¢ »óÅÂ
+    // ì°½ ìƒíƒœ
     private bool onOpen, offOpen;
     private bool onConsumed, offConsumed;
     private float onCloseAt, offCloseAt;
 
-    // ¦¡¦¡ ÀÔ·Â ¹öÆÛ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ ìž…ë ¥ ë²„í¼ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     struct BufferedCmd
     {
         public bool flag;
-        public float t;  // ÀúÀåµÈ ½Ã°¢ (unscaled)
+        public float t;  // ì €ìž¥ëœ ì‹œê° (unscaled)
         public void Set() { flag = true; t = Time.unscaledTime; }
         public bool IsValid(float hold) => flag && (Time.unscaledTime - t) <= hold;
         public void Clear() { flag = false; }
@@ -67,43 +68,43 @@ public class PlayerInput : MonoBehaviour
 
     void Update()
     {
-        // 1) ¾ðÁ¦µçÁö ÀÔ·ÂÀ» ¹öÆÛ¿¡ ÀúÀå (Ã¢ÀÌ ´ÝÇôÀÖ¾îµµ ÀúÀå)
+        // 1) ì–¸ì œë“ ì§€ ìž…ë ¥ì„ ë²„í¼ì— ì €ìž¥ (ì°½ì´ ë‹«í˜€ìžˆì–´ë„ ì €ìž¥)
         if (Input.GetKeyDown(KeyCode.A)) bufLeft.Set();
         if (Input.GetKeyDown(KeyCode.D)) bufRight.Set();
         if (Input.GetKeyDown(attackKey)) bufAttack.Set();
         if (Input.GetKeyDown(counterKey)) bufCounter.Set();
 
-        // (¿É¼Ç) Å×½ºÆ® VFX
+        // (ì˜µì…˜) í…ŒìŠ¤íŠ¸ VFX
         if (Input.GetKeyDown(KeyCode.T) && counterVFX != null)
             counterVFX.PlayVFX();
 
-        // 2) Ã¢ ½Ã°£ °ü¸®(½½·Î¸ð¼Ç ¿µÇâ ¾øÀ½)
+        // 2) ì°½ ì‹œê°„ ê´€ë¦¬(ìŠ¬ë¡œëª¨ì…˜ ì˜í–¥ ì—†ìŒ)
         if (onOpen && Time.unscaledTime > onCloseAt) onOpen = false;
         if (offOpen && Time.unscaledTime > offCloseAt) offOpen = false;
 
-        // 3) Á¤¹Ú Ã¢ ¿­·Á ÀÖÀ¸¸é Áï½Ã Ã³¸® (°¢ Ã¢´ç 1È¸¸¸)
+        // 3) ì •ë°• ì°½ ì—´ë ¤ ìžˆìœ¼ë©´ ì¦‰ì‹œ ì²˜ë¦¬ (ê° ì°½ë‹¹ 1íšŒë§Œ)
         if (onOpen && !onConsumed)
         {
             if (TryConsumeOnBeatImmediate()) onConsumed = true;
         }
 
-        // 4) ¾ù¹Ú Ã¢ ¿­·Á ÀÖÀ¸¸é Áï½Ã Ã³¸®
+        // 4) ì—‡ë°• ì°½ ì—´ë ¤ ìžˆìœ¼ë©´ ì¦‰ì‹œ ì²˜ë¦¬
         if (offOpen && !offConsumed)
         {
             if (TryConsumeOffBeatImmediate()) offConsumed = true;
         }
 
-        // 5) Ã¢ÀÌ ´ÝÈù »óÅÂ¿¡¼­µµ ¹öÆÛ´Â À¯ÁöµÊ.
-        //    ´ÙÀ½ OnBeat/OffBeat°¡ ¿­¸± ¶§ OpenOn/OpenOff ³»ºÎ¿¡¼­ ÀÚµ¿À¸·Î ¼ÒÁøµÊ.
+        // 5) ì°½ì´ ë‹«ížŒ ìƒíƒœì—ì„œë„ ë²„í¼ëŠ” ìœ ì§€ë¨.
+        //    ë‹¤ìŒ OnBeat/OffBeatê°€ ì—´ë¦´ ë•Œ OpenOn/OpenOff ë‚´ë¶€ì—ì„œ ìžë™ìœ¼ë¡œ ì†Œì§„ë¨.
     }
 
-    // ¦¡¦¡ Ã¢ ¿ÀÇÂ ½ÃÁ¡ Ã³¸® ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ ì°½ ì˜¤í”ˆ ì‹œì  ì²˜ë¦¬ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     void OpenOn()
     {
         onOpen = true; onConsumed = false;
         onCloseAt = Time.unscaledTime + inputWindow;
 
-        // Ã¢ÀÌ ¿­¸®´Â ¼ø°£ ¹öÆÛ¿¡ ÀúÀåµÈ ÀÔ·ÂÀÌ ÀÖÀ¸¸é Áï½Ã ¼ÒÁø
+        // ì°½ì´ ì—´ë¦¬ëŠ” ìˆœê°„ ë²„í¼ì— ì €ìž¥ëœ ìž…ë ¥ì´ ìžˆìœ¼ë©´ ì¦‰ì‹œ ì†Œì§„
         if (!onConsumed && TryConsumeOnBeatBuffered()) onConsumed = true;
     }
 
@@ -115,15 +116,15 @@ public class PlayerInput : MonoBehaviour
         if (!offConsumed && TryConsumeOffBeatBuffered()) offConsumed = true;
     }
 
-    // ¦¡¦¡ Áï½Ã ¼Òºñ(Ã¢ ¿­·Á ÀÖÀ» ¶§, Å°´Ù¿î ¿ì¼±) ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ ì¦‰ì‹œ ì†Œë¹„(ì°½ ì—´ë ¤ ìžˆì„ ë•Œ, í‚¤ë‹¤ìš´ ìš°ì„ ) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     bool TryConsumeOnBeatImmediate()
     {
-        // Å°°¡ Áö±Ý ¸· ´­·È´Ù¸é ÃÖ¿ì¼±
+        // í‚¤ê°€ ì§€ê¸ˆ ë§‰ ëˆŒë ¸ë‹¤ë©´ ìµœìš°ì„ 
         if (Input.GetKeyDown(KeyCode.A) && posIndex > 0) { MoveTo(posIndex - 1); return true; }
         if (Input.GetKeyDown(KeyCode.D) && posIndex < 2) { MoveTo(posIndex + 1); return true; }
         if (Input.GetKeyDown(attackKey)) { DoAttack(); return true; }
 
-        // ¹Ù·Î ´­¸° °Ç ¾øÁö¸¸ ¹öÆÛ°¡ »ì¾ÆÀÖ´Ù¸é Áï½Ã ¼Òºñ
+        // ë°”ë¡œ ëˆŒë¦° ê±´ ì—†ì§€ë§Œ ë²„í¼ê°€ ì‚´ì•„ìžˆë‹¤ë©´ ì¦‰ì‹œ ì†Œë¹„
         return TryConsumeOnBeatBuffered();
     }
 
@@ -133,17 +134,16 @@ public class PlayerInput : MonoBehaviour
         return TryConsumeOffBeatBuffered();
     }
 
-    // ¦¡¦¡ ¹öÆÛ ¼Òºñ(Ã¢ÀÌ ¸· ¿­·ÈÀ» ¶§³ª, Áï½Ã ÀÔ·ÂÀÌ ¾øÀ» ¶§) ¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ ë²„í¼ ì†Œë¹„(ì°½ì´ ë§‰ ì—´ë ¸ì„ ë•Œë‚˜, ì¦‰ì‹œ ìž…ë ¥ì´ ì—†ì„ ë•Œ) â”€â”€â”€â”€â”€â”€
     bool TryConsumeOnBeatBuffered()
     {
         bool consumed = false;
-
-        // ÀÌµ¿ ÀÔ·Â ¿ì¼± ¡æ ±× ´ÙÀ½ °ø°Ý (¿ì¼±¼øÀ§´Â ÃëÇâ´ë·Î ¹Ù²ãµµ µÊ)
+        // ì´ë™ ìž…ë ¥ ìš°ì„  â†’ ê·¸ ë‹¤ìŒ ê³µê²© (ìš°ì„ ìˆœìœ„ëŠ” ì·¨í–¥ëŒ€ë¡œ ë°”ê¿”ë„ ë¨)
         if (!consumed && bufLeft.IsValid(bufferHold) && posIndex > 0) { MoveTo(posIndex - 1); bufLeft.Clear(); consumed = true; }
         if (!consumed && bufRight.IsValid(bufferHold) && posIndex < 2) { MoveTo(posIndex + 1); bufRight.Clear(); consumed = true; }
         if (!consumed && bufAttack.IsValid(bufferHold)) { DoAttack(); bufAttack.Clear(); consumed = true; }
 
-        // ¼Òºñ ¸ø Çß¾îµµ ¹öÆÛ´Â À¯Áö ¡æ ´ÙÀ½ ºñÆ®¿¡¼­ ¶Ç ½Ãµµ
+        // ì†Œë¹„ ëª» í–ˆì–´ë„ ë²„í¼ëŠ” ìœ ì§€ â†’ ë‹¤ìŒ ë¹„íŠ¸ì—ì„œ ë˜ ì‹œë„
         return consumed;
     }
 
@@ -158,7 +158,7 @@ public class PlayerInput : MonoBehaviour
         return false;
     }
 
-    // ¦¡¦¡ ½ÇÇà µ¿ÀÛ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€ ì‹¤í–‰ ë™ìž‘ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     void MoveTo(int next)
     {
         posIndex = next;
@@ -168,7 +168,7 @@ public class PlayerInput : MonoBehaviour
 
     void DoAttack()
     {
-        AttackEvent?.Invoke(); // AttackResolver°¡ µè´Â ÀÌº¥Æ®
+        AttackEvent?.Invoke(); // AttackResolverê°€ ë“£ëŠ” ì´ë²¤íŠ¸
         if (attack) attack.Attack();
     }
 

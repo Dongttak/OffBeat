@@ -4,28 +4,28 @@ using UnityEngine;
 public class CounterManager : MonoBehaviour
 {
     [Header("Timing")]
-    [SerializeField] private float windowDuration = 0.35f;   // ÆÇÁ¤Ã¢ ±æÀÌ
-    [SerializeField] private float cooldown = 0.50f;   // ¼º°ø/½ÇÆĞ ÈÄ Àá±İ ½Ã°£
-    [SerializeField] private bool requireOffBeat = true;    // ¾ù¹Ú¸¸ Çã¿ë ¿©ºÎ
+    [SerializeField] private float windowDuration = 0.35f;   // íŒì •ì°½ ê¸¸ì´
+    [SerializeField] private float cooldown = 0.50f;   // ì„±ê³µ/ì‹¤íŒ¨ í›„ ì ê¸ˆ ì‹œê°„
+    [SerializeField] private bool requireOffBeat = true;    // ì—‡ë°•ë§Œ í—ˆìš© ì—¬ë¶€
 
     [Header("Behavior")]
-    [SerializeField] private bool showHints = true;          // ÈùÆ®(!) »ç¿ë ¿©ºÎ (Phase1¿¡¼­ true)
+    [SerializeField] private bool showHints = true;          // íŒíŠ¸(!) ì‚¬ìš© ì—¬ë¶€ (Phase1ì—ì„œ true)
 
     [Header("Debug / Test")]
-    [SerializeField] private bool enableTestKey = true;   // ¡ç Å×½ºÆ® Å° »ç¿ë
+    [SerializeField] private bool enableTestKey = true;   // â† í…ŒìŠ¤íŠ¸ í‚¤ ì‚¬ìš©
     [SerializeField] private KeyCode testKey = KeyCode.T;
-    [Tooltip("Å×½ºÆ®¿¡¼­ ÈùÆ® ÈÄ ½ÇÁ¦ ÆÇÁ¤Ã¢±îÁö ±â´Ù¸± ½Ã°£(ÃÊ)")]
+    [Tooltip("í…ŒìŠ¤íŠ¸ì—ì„œ íŒíŠ¸ í›„ ì‹¤ì œ íŒì •ì°½ê¹Œì§€ ê¸°ë‹¤ë¦´ ì‹œê°„(ì´ˆ)")]
     [SerializeField] private float testLeadSeconds = 0.25f;
-    [Tooltip("Å×½ºÆ®¿¡¼­ ½ÇÁ¦ ÆÇÁ¤Ã¢ ±æÀÌ(ÃÊ)")]
+    [Tooltip("í…ŒìŠ¤íŠ¸ì—ì„œ ì‹¤ì œ íŒì •ì°½ ê¸¸ì´(ì´ˆ)")]
     [SerializeField] private float testWindowSeconds = 0.35f;
 
     public bool ShowHints => showHints;
     public float WindowDuration => windowDuration;
     public bool IsWindowOpen => _windowOpen;
     public bool IsCountering => _busy;
-
-    public event Action OnCounterHintOpen;     // ÈùÆ®(!) Ç¥½Ã
-    public event Action<float> OnWindowOpen;          // ÆÇÁ¤Ã¢ ¿ÀÇÂ(duration)
+    
+    public event Action OnCounterHintOpen;     // íŒíŠ¸(!) í‘œì‹œ
+    public event Action<float> OnWindowOpen;          // íŒì •ì°½ ì˜¤í”ˆ(duration)
     public event Action OnCounterSuccess;
     public event Action OnCounterFail;
 
@@ -35,7 +35,7 @@ public class CounterManager : MonoBehaviour
 
     public void SetShowHints(bool v) => showHints = v;
 
-    /// <summary>º¸½º ÆĞÅÏ ½ÃÀÛ ½Ã: ÈùÆ®(!) ¶ç¿ì°í, leadSeconds ÈÄ ÀÚµ¿À¸·Î ÆÇÁ¤Ã¢ ¿ÀÇÂ</summary>
+    /// <summary>ë³´ìŠ¤ íŒ¨í„´ ì‹œì‘ ì‹œ: íŒíŠ¸(!) ë„ìš°ê³ , leadSeconds í›„ ìë™ìœ¼ë¡œ íŒì •ì°½ ì˜¤í”ˆ</summary>
     public void PreHint(float leadSeconds = 0.25f)
     {
         if (!showHints || _busy) return;
@@ -48,7 +48,7 @@ public class CounterManager : MonoBehaviour
             OpenWindowInternal();
     }
 
-    /// <summary>¹Ù·Î ÆÇÁ¤Ã¢¸¸ ¿­°í ½ÍÀ» ¶§(Phase2)</summary>
+    /// <summary>ë°”ë¡œ íŒì •ì°½ë§Œ ì—´ê³  ì‹¶ì„ ë•Œ(Phase2)</summary>
     public void OpenWindow(float duration = -1f)
     {
         if (_busy) return;
@@ -65,7 +65,7 @@ public class CounterManager : MonoBehaviour
         OnWindowOpen?.Invoke(windowDuration);
     }
 
-    /// <summary>ÇÃ·¹ÀÌ¾î°¡ ¹İÀÀ ½Ãµµ ¡æ Å¸ÀÌ¹Ö ÆÇÁ¤</summary>
+    /// <summary>í”Œë ˆì´ì–´ê°€ ë°˜ì‘ ì‹œë„ â†’ íƒ€ì´ë° íŒì •</summary>
     public bool TryCounter()
     {
         if (!_windowOpen)
@@ -79,19 +79,19 @@ public class CounterManager : MonoBehaviour
 
     void Update()
     {
-        // Ã¢ ½Ã°£ ÃÊ°ú
+        // ì°½ ì‹œê°„ ì´ˆê³¼
         if (_windowOpen && Time.unscaledTime >= _windowEndTime)
             Fail();
 
-        // ===== Å×½ºÆ® Æ®¸®°Å =====
+        // ===== í…ŒìŠ¤íŠ¸ íŠ¸ë¦¬ê±° =====
         if (enableTestKey && Input.GetKeyDown(testKey))
         {
-            // ÈùÆ®(!)¸¸ ¾²°í ½ÍÀ¸¸é PreHint¸¸ È£Ãâ,
-            // ¹Ù·Î Ã¢¸¸ º¸°í ½ÍÀ¸¸é OpenWindow(testWindowSeconds) È£Ãâ·Î ¹Ù²Ù¸é µË´Ï´Ù.
+            // íŒíŠ¸(!)ë§Œ ì“°ê³  ì‹¶ìœ¼ë©´ PreHintë§Œ í˜¸ì¶œ,
+            // ë°”ë¡œ ì°½ë§Œ ë³´ê³  ì‹¶ìœ¼ë©´ OpenWindow(testWindowSeconds) í˜¸ì¶œë¡œ ë°”ê¾¸ë©´ ë©ë‹ˆë‹¤.
             if (showHints)
-                PreHint(testLeadSeconds);      // ÈùÆ® ¡æ testLeadSeconds ÈÄ ÀÚµ¿À¸·Î Ã¢ ¿ÀÇÂ
+                PreHint(testLeadSeconds);      // íŒíŠ¸ â†’ testLeadSeconds í›„ ìë™ìœ¼ë¡œ ì°½ ì˜¤í”ˆ
             else
-                OpenWindow(testWindowSeconds);  // Phase2Ã³·³ Áï½Ã Ã¢ ¿ÀÇÂ
+                OpenWindow(testWindowSeconds);  // Phase2ì²˜ëŸ¼ ì¦‰ì‹œ ì°½ ì˜¤í”ˆ
         }
     }
 

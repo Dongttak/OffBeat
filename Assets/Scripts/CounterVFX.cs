@@ -8,27 +8,27 @@ public class CounterVFX : MonoBehaviour
     [SerializeField] private Camera targetCamera;
 
     [Header("Boss Target")]
-    [SerializeField] private Transform bossTarget;      // º¸½ºÀÇ Áß½É(¸Ó¸®/°¡½¿ µî)
-    [SerializeField] private Transform bossRoot;        // º¸½º ÀüÃ¼ ·»´õ·¯ Æ÷ÇÔ ·çÆ®
+    [SerializeField] private Transform bossTarget;      // ë³´ìŠ¤ì˜ ì¤‘ì‹¬(ë¨¸ë¦¬/ê°€ìŠ´ ë“±)
+    [SerializeField] private Transform bossRoot;        // ë³´ìŠ¤ ì „ì²´ ë Œë”ëŸ¬ í¬í•¨ ë£¨íŠ¸
 
     [Header("Auto Framing")]
     [SerializeField] private bool useAutoFraming = true;
-    [SerializeField] private float framingPadding = 1.15f;  // 1=µü, 1.15=¿©À¯
-    [SerializeField] private bool fitByHeight = true;       // true: ¼¼·Î ±âÁØ, false: °¡·Î ±âÁØ
+    [SerializeField] private float framingPadding = 1.15f;  // 1=ë”±, 1.15=ì—¬ìœ 
+    [SerializeField] private bool fitByHeight = true;       // true: ì„¸ë¡œ ê¸°ì¤€, false: ê°€ë¡œ ê¸°ì¤€
     [SerializeField] private float minDistance = 6f;
     [SerializeField] private float maxDistance = 30f;
     [SerializeField] private Vector3 manualOffset = new Vector3(0f, 1.6f, -8f);
 
     [Header("Aim (LookAt)")]
-    [SerializeField] private float aimYOffset = 0f;         // º¸½º Áß½É ´ëºñ À§(+)/¾Æ·¡(-) º¸Á¤
+    [SerializeField] private float aimYOffset = 0f;         // ë³´ìŠ¤ ì¤‘ì‹¬ ëŒ€ë¹„ ìœ„(+)/ì•„ë˜(-) ë³´ì •
 
     [Header("Bounds Filter (for Auto Framing)")]
-    [SerializeField] private LayerMask boundsLayer = ~0;    // º¸½º ·¹ÀÌ¾î¸¸ ÄÑµÎ¸é ¾ÈÁ¤Àû
-    [SerializeField] private string requiredTag = "";       // º¸½º ·»´õ·¯¿¡ "Boss" ÅÂ±×°¡ ÀÖ´Ù¸é ÁöÁ¤
+    [SerializeField] private LayerMask boundsLayer = ~0;    // ë³´ìŠ¤ ë ˆì´ì–´ë§Œ ì¼œë‘ë©´ ì•ˆì •ì 
+    [SerializeField] private string requiredTag = "";       // ë³´ìŠ¤ ë Œë”ëŸ¬ì— "Boss" íƒœê·¸ê°€ ìˆë‹¤ë©´ ì§€ì •
 
     [Header("Stabilize Shot")]
-    [SerializeField] private bool freezeBoundsDuringShot = true; // ¿¬Ãâ Áß ¹Ù¿îµå/Áß½É °íÁ¤
-    [SerializeField] private MonoBehaviour[] shakersToDisable;   // PulseToBeat µî Èçµé¸² ½ºÅ©¸³Æ®
+    [SerializeField] private bool freezeBoundsDuringShot = true; // ì—°ì¶œ ì¤‘ ë°”ìš´ë“œ/ì¤‘ì‹¬ ê³ ì •
+    [SerializeField] private MonoBehaviour[] shakersToDisable;   // PulseToBeat ë“± í”ë“¤ë¦¼ ìŠ¤í¬ë¦½íŠ¸
 
     [Header("Timing")]
     [SerializeField] private float focusInTime = 0.22f;
@@ -48,7 +48,7 @@ public class CounterVFX : MonoBehaviour
 
     Coroutine running;
 
-    // Ä³½Ã(¾ÈÁ¤È­¿ë)
+    // ìºì‹œ(ì•ˆì •í™”ìš©)
     Bounds _cachedBounds;
     Vector3 _cachedCenter;
 
@@ -75,7 +75,7 @@ public class CounterVFX : MonoBehaviour
             PlayVFX();
     }
 
-    /// <summary>¿ÜºÎ/Å×½ºÆ®¿¡¼­ È£Ãâ °¡´É</summary>
+    /// <summary>ì™¸ë¶€/í…ŒìŠ¤íŠ¸ì—ì„œ í˜¸ì¶œ ê°€ëŠ¥</summary>
     public void PlayVFX()
     {
         if (!targetCamera || !bossTarget) return;
@@ -90,11 +90,11 @@ public class CounterVFX : MonoBehaviour
         Quaternion startRot = camTr.rotation;
         float startFov = targetCamera.fieldOfView;
 
-        // ÄÁÆ®·Ñ/Èçµé¸² Á¤Áö
+        // ì»¨íŠ¸ë¡¤/í”ë“¤ë¦¼ ì •ì§€
         SetControllersEnabled(false);
         SetShakersEnabled(false);
 
-        // Áß½É/¹Ù¿îµå °è»ê
+        // ì¤‘ì‹¬/ë°”ìš´ë“œ ê³„ì‚°
         Vector3 centerForShot = bossTarget.position;
         if (useAutoFraming && bossRoot)
         {
@@ -103,10 +103,10 @@ public class CounterVFX : MonoBehaviour
             if (freezeBoundsDuringShot) { _cachedBounds = b; _cachedCenter = b.center; }
         }
 
-        // ¸ñÇ¥ FOV
+        // ëª©í‘œ FOV
         float targetFov = Mathf.Max(1f, startFov - fovKickAmount);
 
-        // °Å¸®/À§Ä¡/½Ã¼± °áÁ¤
+        // ê±°ë¦¬/ìœ„ì¹˜/ì‹œì„  ê²°ì •
         Vector3 desiredPos;
         Vector3 focusPos;
 
@@ -125,9 +125,9 @@ public class CounterVFX : MonoBehaviour
             float dist = (sizeToFit * 0.5f * framingPadding) / Mathf.Tan(fovRad * 0.5f);
             dist = Mathf.Clamp(dist, minDistance, maxDistance);
 
-            // ¼öÆò ¹æÇâ¸¸ »ç¿ë (Y´Â ÇöÀç Ä«¸Ş¶ó ³ôÀÌ À¯Áö)
+            // ìˆ˜í‰ ë°©í–¥ë§Œ ì‚¬ìš© (YëŠ” í˜„ì¬ ì¹´ë©”ë¼ ë†’ì´ ìœ ì§€)
             Vector3 cen = freezeBoundsDuringShot ? _cachedCenter : b.center;
-            Vector3 toCam = camTr.position - cen; // ÇöÀç Ä«¸Ş¶ó¿¡¼­ Áß½ÉÀ¸·Î
+            Vector3 toCam = camTr.position - cen; // í˜„ì¬ ì¹´ë©”ë¼ì—ì„œ ì¤‘ì‹¬ìœ¼ë¡œ
             toCam.y = 0f;
             if (toCam.sqrMagnitude < 1e-4f)
             {
@@ -139,7 +139,7 @@ public class CounterVFX : MonoBehaviour
 
             desiredPos = new Vector3(cen.x, startPos.y, cen.z) + toCam * dist;
 
-            // º¸´Â ÁöÁ¡Àº Áß½É + ¿ÀÇÁ¼Â(À§/¾Æ·¡ º¸Á¤)
+            // ë³´ëŠ” ì§€ì ì€ ì¤‘ì‹¬ + ì˜¤í”„ì…‹(ìœ„/ì•„ë˜ ë³´ì •)
             focusPos = new Vector3(cen.x, cen.y + aimYOffset, cen.z);
         }
         else
@@ -151,7 +151,7 @@ public class CounterVFX : MonoBehaviour
             focusPos = new Vector3(tp.x, tp.y + aimYOffset, tp.z);
         }
 
-        // ÀÌµ¿/È¸Àü + ÁÜÀÎ
+        // ì´ë™/íšŒì „ + ì¤Œì¸
         float t = 0f;
         float totalIn = Mathf.Max(focusInTime, fovInTime);
         while (t < totalIn)
@@ -170,7 +170,7 @@ public class CounterVFX : MonoBehaviour
             yield return null;
         }
 
-        // À¯Áö Áß¿¡µµ ¾à°£ ÃßÀû(Áß½É/½Ã¼±¸¸ º¸Á¤, ¼öÆò °Å¸® À¯Áö)
+        // ìœ ì§€ ì¤‘ì—ë„ ì•½ê°„ ì¶”ì (ì¤‘ì‹¬/ì‹œì„ ë§Œ ë³´ì •, ìˆ˜í‰ ê±°ë¦¬ ìœ ì§€)
         float hold = 0f;
         while (hold < focusHoldTime)
         {
@@ -182,7 +182,7 @@ public class CounterVFX : MonoBehaviour
                 Vector3 targetFocus = new Vector3(cen.x, cen.y + aimYOffset, cen.z);
                 focusPos = Vector3.Lerp(focusPos, targetFocus, 0.15f);
 
-                // ÇöÀç ¼öÆò °Å¸® À¯ÁöÇÏ¸ç ºÎµå·´°Ô µû¶ó°¡±â
+                // í˜„ì¬ ìˆ˜í‰ ê±°ë¦¬ ìœ ì§€í•˜ë©° ë¶€ë“œëŸ½ê²Œ ë”°ë¼ê°€ê¸°
                 float curDist = Vector3.Distance(
                     new Vector3(camTr.position.x, 0f, camTr.position.z),
                     new Vector3(focusPos.x, 0f, focusPos.z)
@@ -206,7 +206,7 @@ public class CounterVFX : MonoBehaviour
             yield return null;
         }
 
-        // º¹±Í
+        // ë³µê·€
         float t2 = 0f;
         while (t2 < fovOutTime)
         {
@@ -222,13 +222,13 @@ public class CounterVFX : MonoBehaviour
         camTr.rotation = startRot;
         targetCamera.fieldOfView = startFov;
 
-        // º¹±¸
+        // ë³µêµ¬
         SetControllersEnabled(true);
         SetShakersEnabled(true);
         running = null;
     }
 
-    // ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ helpers ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     Bounds CalcBoundsFiltered(Transform root)
     {
@@ -240,10 +240,10 @@ public class CounterVFX : MonoBehaviour
         {
             if (r == null || !r.enabled) continue;
 
-            // ·¹ÀÌ¾î ÇÊÅÍ
+            // ë ˆì´ì–´ í•„í„°
             if ((boundsLayer.value & (1 << r.gameObject.layer)) == 0) continue;
 
-            // ÅÂ±× ÇÊÅÍ(¿É¼Ç)
+            // íƒœê·¸ í•„í„°(ì˜µì…˜)
             if (!string.IsNullOrEmpty(requiredTag) && !r.CompareTag(requiredTag)) continue;
 
             if (first == null)

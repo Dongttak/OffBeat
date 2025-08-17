@@ -18,14 +18,14 @@ public class HandleCounter : MonoBehaviour
 
         if (Input.GetKeyDown(hintKey))
         {
-            // ÈùÆ® ¶ç¿ì°í 0.3ÃÊ ÈÄ ½ÇÁ¦ Ã¢ ¿ÀÇÂ
+            // íŒíŠ¸ ë„ìš°ê³  0.3ì´ˆ í›„ ì‹¤ì œ ì°½ ì˜¤í”ˆ
             mgr.PreHint(0.3f);
             Debug.Log("[Counter] PreHint called");
         }
 
         if (Input.GetKeyDown(openKey))
         {
-            // ¹Ù·Î ÆÇÁ¤Ã¢¸¸ ¿­±â(¿¹: Phase2)
+            // ë°”ë¡œ íŒì •ì°½ë§Œ ì—´ê¸°(ì˜ˆ: Phase2)
             mgr.OpenWindow(mgr.WindowDuration);
             Debug.Log("[Counter] OpenWindow called");
         }

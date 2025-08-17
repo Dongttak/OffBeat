@@ -16,48 +16,49 @@ public class BeatManager : MonoBehaviour
     private EVENT_CALLBACK beatCallback;
 
     [Header("Tempo Settings")]
-    [Tooltip("¿øÇÏ´Â Ã¼°¨ BPM. useFmodTempo¸¦ ²ô¸é ÀÌ °ª ±âÁØÀ¸·Î OnBeat/OffBeatÀÌ ¹ß»ı")]
+
+    [Tooltip("ì›í•˜ëŠ” ì²´ê° BPM. useFmodTempoë¥¼ ë„ë©´ ì´ ê°’ ê¸°ì¤€ìœ¼ë¡œ OnBeat/OffBeatì´ ë°œìƒ")]
     [SerializeField] private float bpm = 120f;
 
-    [Tooltip("ÇÑ ¹ÚÀÚ´ç ½ºÅÜ ¼ö (4ºĞÀ½Ç¥=1, 8ºĞÀ½Ç¥=2)")]
+    [Tooltip("í•œ ë°•ìë‹¹ ìŠ¤í… ìˆ˜ (4ë¶„ìŒí‘œ=1, 8ë¶„ìŒí‘œ=2)")]
     [SerializeField] private float stepsPerBeat = 1f;
 
-    [Tooltip("ÆÇÁ¤ À©µµ¿ì Æø (½ºÅÜ ±æÀÌÀÇ %)")]
+    [Tooltip("íŒì • ìœˆë„ìš° í­ (ìŠ¤í… ê¸¸ì´ì˜ %)")]
     [Range(0f, 1f)][SerializeField] private float hitWindowPercent = 0.25f;
 
     [Header("Beat Source")]
-    [Tooltip("FMOD Äİ¹é¿¡¼­ ³»·ÁÁÖ´Â tempo¸¦ ¾µÁö ¿©ºÎ. ²ô¸é À§ÀÇ bpm °íÁ¤")]
+    [Tooltip("FMOD ì½œë°±ì—ì„œ ë‚´ë ¤ì£¼ëŠ” tempoë¥¼ ì“¸ì§€ ì—¬ë¶€. ë„ë©´ ìœ„ì˜ bpm ê³ ì •")]
     [SerializeField] private bool useFmodTempo = false;
 
-    private int intervalMs;   // ½ºÅÜ °£°İ(ms)
-    private int hitRangeMs;   // ÆÇÁ¤ ¹İ°æ(ms)
+    private int intervalMs;   // ìŠ¤í… ê°„ê²©(ms)
+    private int hitRangeMs;   // íŒì • ë°˜ê²½(ms)
     private bool isInitialized;
 
     private float _lastTempoFromFmod = -1f;
 
-    // Å¸ÀÓ¶óÀÎ ±â¹İ beat emission
+    // íƒ€ì„ë¼ì¸ ê¸°ë°˜ beat emission
     private int _lastBeatIndex = -1;
     private bool _offEmittedForThisBeat = false;
 
-    // Æú¹é¿ë (FMOD Å¸ÀÓ¶óÀÎÀÌ 0¸¸ ÁÖ´Â È¯°æ)
+    // í´ë°±ìš© (FMOD íƒ€ì„ë¼ì¸ì´ 0ë§Œ ì£¼ëŠ” í™˜ê²½)
     private float _startUnscaledTime;
     private bool _useFallbackTime = false;
 
-    // ÆÇÁ¤ ¿µ¿ª
+    // íŒì • ì˜ì—­
     private struct JudgeZone { public int startMs, endMs; }
     private readonly List<JudgeZone> onBeatZones = new();
     private readonly List<JudgeZone> offBeatZones = new();
 
-    // Pulse ´ë»ó
+    // Pulse ëŒ€ìƒ
     public List<PulseToBeat> pulseTargets = new();
 
-    // ÀÌº¥Æ®
+    // ì´ë²¤íŠ¸
     public static event Action OnBeat;
     public static event Action OffBeat;
 
     public bool IsInitialized => isInitialized;
-
-    // FMOD Äİ¹é¿¡¼­ ³»·ÁÁÖ´Â ¼Ó¼º
+    
+    // FMOD ì½œë°±ì—ì„œ ë‚´ë ¤ì£¼ëŠ” ì†ì„±
     [StructLayout(LayoutKind.Sequential)]
     struct TimelineBeatProperties
     {
@@ -88,7 +89,6 @@ public class BeatManager : MonoBehaviour
         musicInstance = RuntimeManager.CreateInstance(musicEvent);
         musicDesc = RuntimeManager.GetEventDescription(musicEvent);
 
-        // ±âº» °î ±æÀÌ
         int songLenMs = 180_000;
         if (musicDesc.isValid())
         {
@@ -99,14 +99,14 @@ public class BeatManager : MonoBehaviour
         RecalculateTiming();
         BuildJudgeZones(songLenMs);
 
-        // Äİ¹é µî·Ï (tempo ÃßÃâ¿ë)
+        // ì½œë°± ë“±ë¡ (tempo ì¶”ì¶œìš©)
         beatCallback = TimelineBeatCallback;
         musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
 
         musicInstance.start();
         isInitialized = true;
-
-        // FMOD Å¸ÀÓ¶óÀÎÀÌ 0¸¸ ÁÙ °æ¿ì ´ëºñ
+        
+        // FMOD íƒ€ì„ë¼ì¸ì´ 0ë§Œ ì¤„ ê²½ìš° ëŒ€ë¹„
         musicInstance.getTimelinePosition(out int pos);
         if (pos == 0)
         {
@@ -139,7 +139,7 @@ public class BeatManager : MonoBehaviour
 
     void RecalculateTiming()
     {
-        // 120 BPM °íÁ¤À¸·Î ¾²·Á¸é useFmodTempo¸¦ ²¨µÎ°í bpm=120, stepsPerBeat=1 À¯Áö
+        // 120 BPM ê³ ì •ìœ¼ë¡œ ì“°ë ¤ë©´ useFmodTempoë¥¼ êº¼ë‘ê³  bpm=120, stepsPerBeat=1 ìœ ì§€
         float basisBpm = (useFmodTempo && _lastTempoFromFmod > 0f) ? _lastTempoFromFmod : bpm;
 
         float stepIntervalSec = 60f / Mathf.Max(1e-4f, basisBpm * stepsPerBeat);
@@ -189,7 +189,7 @@ public class BeatManager : MonoBehaviour
 
     void PulseAll()
     {
-        // null µé¾îÀÖÀ» ¼ö ÀÖÀ¸´Ï ÇÑ¹ø Á¤¸®
+        // null ë“¤ì–´ìˆì„ ìˆ˜ ìˆìœ¼ë‹ˆ í•œë²ˆ ì •ë¦¬
         for (int i = pulseTargets.Count - 1; i >= 0; i--)
         {
             var p = pulseTargets[i];
@@ -251,7 +251,7 @@ public class BeatManager : MonoBehaviour
         if (p == null) return;
         pulseTargets.Remove(p);
     }
-    // ¿ÜºÎ ÆÇÁ¤¿ë
+    // ì™¸ë¶€ íŒì •ìš©
     public bool IsOnBeatNow() => IsInZone(GetTimelineMs(), onBeatZones);
     public bool IsOffBeatNow() => IsInZone(GetTimelineMs(), offBeatZones);
 }
