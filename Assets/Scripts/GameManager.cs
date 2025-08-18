@@ -134,8 +134,10 @@ public class GameManager : MonoBehaviour
 
     void SetMusicPaused(bool paused)
     {
-#if FMOD
-        if (musicBus.isValid()) musicBus.setPaused(paused);
-#endif
+        // FMOD Bus 제어 대신, 곧바로 BeatManager의 이벤트 인스턴스 정지
+        if (BeatManager.Instance != null && BeatManager.Instance.IsMusicValid())
+        {
+            BeatManager.Instance.SetMusicPaused(paused);
+        }
     }
 }

@@ -57,7 +57,7 @@ public class BeatManager : MonoBehaviour
     public static event Action OffBeat;
 
     public bool IsInitialized => isInitialized;
-    
+
     // FMOD 콜백에서 내려주는 속성
     [StructLayout(LayoutKind.Sequential)]
     struct TimelineBeatProperties
@@ -69,7 +69,7 @@ public class BeatManager : MonoBehaviour
         public int timesig_numerator;
         public int timesig_denominator;
     }
-    
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -78,7 +78,7 @@ public class BeatManager : MonoBehaviour
         if (pulseTargets == null || pulseTargets.Count == 0)
             pulseTargets = new List<PulseToBeat>(FindObjectsOfType<PulseToBeat>(true));
     }
-    
+
     void Start()
     {
         InitAndStartMusic();
@@ -105,7 +105,7 @@ public class BeatManager : MonoBehaviour
 
         musicInstance.start();
         isInitialized = true;
-        
+
         // FMOD 타임라인이 0만 줄 경우 대비
         musicInstance.getTimelinePosition(out int pos);
         if (pos == 0)
@@ -254,4 +254,12 @@ public class BeatManager : MonoBehaviour
     // 외부 판정용
     public bool IsOnBeatNow() => IsInZone(GetTimelineMs(), onBeatZones);
     public bool IsOffBeatNow() => IsInZone(GetTimelineMs(), offBeatZones);
+    // BeatManager.cs 내부
+    public void SetMusicPaused(bool paused)
+    {
+        if (musicInstance.isValid())
+            musicInstance.setPaused(paused);
+    }
+
+    public bool IsMusicValid() => musicInstance.isValid();
 }

@@ -5943,8 +5943,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1423272717}
-  - component: {fileID: 1423272719}
-  - component: {fileID: 1423272716}
   - component: {fileID: 1423272718}
   - component: {fileID: 1423272720}
   - component: {fileID: 1423272721}
@@ -5956,21 +5954,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1423272716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1423272715}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6387fa2acb848ae4f89dbe71b537088f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerInput: {fileID: 1792919179}
-  pausePopupUI: {fileID: 1977633229}
-  countdownText: {fileID: 1956617796}
 --- !u!4 &1423272717
 Transform:
   m_ObjectHideFlags: 0
@@ -6009,48 +5992,6 @@ MonoBehaviour:
   fallbackBeatSeconds: 0.5
   syncPosIndexViaReflection: 1
   posIndexFieldName: posIndex
---- !u!114 &1423272719
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1423272715}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e4703a4e255ccd4f82de1d2dddfb901, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startStep: 0
-  moveSuccessTarget: 15
-  attackSuccessTarget: 5
-  specialSuccessTarget: 0
-  TutorialUIGroup: {fileID: 360513444}
-  titleText: {fileID: 340233284}
-  guideText: {fileID: 1770022427}
-  counterText: {fileID: 2126640339}
-  feedbackText: {fileID: 1380167852}
-  tipText: {fileID: 847948231}
-  promptGroup: {fileID: 328007068}
-  promptTitle: {fileID: 1771746793}
-  promptBody: {fileID: 1029950650}
-  moveLeftKey: 97
-  moveRightKey: 100
-  attackKey: 32
-  OnMoveLeftSuccess:
-    m_PersistentCalls:
-      m_Calls: []
-  OnMoveRightSuccess:
-    m_PersistentCalls:
-      m_Calls: []
-  OnAttackSuccess:
-    m_PersistentCalls:
-      m_Calls: []
-  OnSpecialSuccess:
-    m_PersistentCalls:
-      m_Calls: []
-  playerInput: {fileID: 1792919179}
-  gameManager: {fileID: 1423272716}
 --- !u!114 &1423272720
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6065,7 +6006,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   progressMode: 0
   startStep: 0
-  moveSuccessTarget: 10
+  moveSuccessTarget: 20
   attackSuccessTarget: 10
   specialSuccessTarget: 5
   moveDuration: 15
