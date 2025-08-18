@@ -4465,11 +4465,11 @@ MonoBehaviour:
   CollisionTag: 
   EventReference:
     Guid:
-      Data1: -457861438
-      Data2: 1080772104
-      Data3: -1958469233
-      Data4: 1433621641
-    Path: event:/Music_oneTempo
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: event:/120bpm
   Event: 
   EventPlayTrigger: 0
   EventStopTrigger: 0
@@ -4495,10 +4495,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   musicEvent:
     Guid:
-      Data1: -2073352202
-      Data2: 1170651507
-      Data3: -900520568
-      Data4: -1268513552
+      Data1: -1903802788
+      Data2: 1151651328
+      Data3: -1649888094
+      Data4: -820447359
     Path: event:/120bpm
   bpm: 120
   stepsPerBeat: 1
