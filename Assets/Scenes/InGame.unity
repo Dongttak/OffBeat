@@ -875,12 +875,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   musicEvent:
     Guid:
-      Data1: -2073352202
-      Data2: 1170651507
-      Data3: -900520568
-      Data4: -1268513552
-    Path: event:/120bpm
-  bpm: 120
+      Data1: 469433172
+      Data2: 1254793221
+      Data3: 1539302279
+      Data4: -1211787849
+    Path: event:/Wantyourbody
+  bpm: 153
   stepsPerBeat: 1
   hitWindowPercent: 0.25
   useFmodTempo: 1
