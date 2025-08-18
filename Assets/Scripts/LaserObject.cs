@@ -11,6 +11,8 @@ public class LaserObject : MonoBehaviour
     private RaycastHit hit;
     private bool attackrequired;
     Vector3 tr;
+    public AudioSource audio;
+    public GameObject laserEffect;
 
     private void Update()
     {
@@ -29,7 +31,7 @@ public class LaserObject : MonoBehaviour
     {
         if (attackrequired)
         {
-            LaserAttack();
+            StartCoroutine(LaserAttack());
         }
     }
 
@@ -46,9 +48,10 @@ public class LaserObject : MonoBehaviour
         attackrequired = true;
     }
 
-    void LaserAttack()
+    IEnumerator LaserAttack()
     {
         tr = transform.position + Vector3.up;
+        audio.Play();
         if (Physics.Raycast(tr, Vector3.back, out hit, 30f))
         {
             if (hit.transform.CompareTag("Player"))
@@ -58,6 +61,10 @@ public class LaserObject : MonoBehaviour
             }
         }
         attackrequired = false;
+        laserEffect.SetActive(true);
+        yield return new WaitForSeconds(0.1f);
+        laserEffect.SetActive(false);
+        yield return new WaitUntil(() => !audio.isPlaying);
         Destroy(gameObject);
     }
 }
