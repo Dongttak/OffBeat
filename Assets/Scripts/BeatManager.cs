@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using FMODUnity;
 using FMOD.Studio;
+using System.Collections;
 
 public class BeatManager : MonoBehaviour
 {
@@ -59,9 +60,12 @@ public class BeatManager : MonoBehaviour
     // 이벤트
     public static event Action OnBeat;
     public static event Action OffBeat;
+    
 
     public bool IsInitialized => isInitialized;
-
+    // 콜백에서 적재할 플래그(메인스레드에서 꺼냄)
+    private int _pendingOnBeats = 0;
+    private int _pendingHalfBeats = 0;
     // FMOD 콜백에서 내려주는 속성
     [StructLayout(LayoutKind.Sequential)]
     struct TimelineBeatProperties
@@ -189,29 +193,53 @@ public class BeatManager : MonoBehaviour
 
     void Update()
     {
-        if (!isInitialized || intervalMs <= 0) return;
+        if (!isInitialized) return;
 
-        int t = GetTimelineMs();
-        int beatIndex = Mathf.FloorToInt(t / (float)intervalMs);
-
-        // OnBeat
-        if (beatIndex != _lastBeatIndex)
+        // 1) 콜백에서 쌓인 OnBeat 처리
+        int onCount = System.Threading.Interlocked.Exchange(ref _pendingOnBeats, 0);
+        for (int i = 0; i < onCount; i++)
         {
-            _lastBeatIndex = beatIndex;
-            _offEmittedForThisBeat = false;
-
             OnBeat?.Invoke();
             PulseAll();
+            _lastBeatIndex++;
         }
 
-        // OffBeat
-        int halfPointMs = (_lastBeatIndex * intervalMs) + (intervalMs / 2);
-        if (!_offEmittedForThisBeat && t >= halfPointMs)
+        // 2) 콜백에서 쌓인 반박 처리
+        int halfCount = System.Threading.Interlocked.Exchange(ref _pendingHalfBeats, 0);
+        for (int i = 0; i < halfCount; i++)
+            StartCoroutine(Co_FireOffBeatHalfStep());
+
+        // 3) === 폴백 방출 ===
+        // 이 프레임에 콜백 기반 OnBeat/OffBeat 예약이 전혀 없으면,
+        // 타임라인(ms)로 직접 On/OffBeat를 방출해준다.
+        if (onCount == 0 && halfCount == 0)
         {
-            _offEmittedForThisBeat = true;
-            OffBeat?.Invoke();
+            // 현재 시간(ms) 기준으로 박자 인덱스 계산
+            int t = GetTimelineMs();
+            if (intervalMs <= 0) return;
+
+            int beatIndex = Mathf.FloorToInt(t / (float)intervalMs);
+
+            // OnBeat 경계 통과
+            if (beatIndex != _lastBeatIndex)
+            {
+                _lastBeatIndex = beatIndex;
+                _offEmittedForThisBeat = false;
+
+                OnBeat?.Invoke();
+                PulseAll();
+            }
+
+            // 반 박자 시점에서 OffBeat
+            int halfPointMs = (_lastBeatIndex * intervalMs) + (intervalMs / 2);
+            if (!_offEmittedForThisBeat && t >= halfPointMs)
+            {
+                _offEmittedForThisBeat = true;
+                OffBeat?.Invoke();
+            }
         }
     }
+
 
     void PulseAll()
     {
@@ -246,16 +274,48 @@ public class BeatManager : MonoBehaviour
         return false;
     }
 
+    // 옵션: 화면 보정용 (시각 이펙트를 조금 당기거나 늦추고 싶을 때)
+    [SerializeField] private int visualOffsetMs = 0;
+
+    // TIMELINE_BEAT 콜백 → OnBeat 예약 및 tempo 갱신
     [AOT.MonoPInvokeCallback(typeof(EVENT_CALLBACK))]
     static FMOD.RESULT TimelineBeatCallback(EVENT_CALLBACK_TYPE type, IntPtr inst, IntPtr param)
     {
         if (type == EVENT_CALLBACK_TYPE.TIMELINE_BEAT && Instance != null && param != IntPtr.Zero)
         {
             var props = Marshal.PtrToStructure<TimelineBeatProperties>(param);
+
+            // FMOD가 내려준 템포 저장
             Instance._lastTempoFromFmod = props.tempo;
             if (Instance.useFmodTempo) Instance.RecalculateTiming();
+
+            // 여기서 "정박" 1회 적재
+            System.Threading.Interlocked.Increment(ref Instance._pendingOnBeats);
+
+            // 엇박은 반 박자 뒤에 예약
+            // (콜백 스레드 → 메인에서 소모)
+            System.Threading.Interlocked.Increment(ref Instance._pendingHalfBeats);
         }
         return FMOD.RESULT.OK;
+    }
+    // 반 박자 뒤 OffBeat (타임스케일 무시)
+    IEnumerator Co_FireOffBeatHalfStep()
+    {
+        // 현 유효 interval을 사용 (속도/템포 반영)
+        float stepIntervalSec = intervalMs / 1000f;
+        float half = stepIntervalSec * 0.5f;
+
+        // 화면 보정(앞/뒤) 하고 싶으면 visualOffsetMs 사용
+        float visual = visualOffsetMs / 1000f;
+
+        float wait = Mathf.Max(0f, half + visual);
+        float t = 0f;
+        while (t < wait)
+        {
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        OffBeat?.Invoke();
     }
 
     void OnDestroy()

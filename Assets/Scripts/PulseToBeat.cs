@@ -24,8 +24,11 @@ public class PulseToBeat : MonoBehaviour
 
     void Update()
     {
-        transform.localScale = Vector3.Lerp(transform.localScale, _startSize, Time.deltaTime * _returnSpeed);
+        // 타임스케일 무시로 부드럽게
+        float dt = Time.unscaledDeltaTime;
+        transform.localScale = Vector3.Lerp(transform.localScale, _startSize, dt * _returnSpeed);
     }
+
 
     public void Pulse()
     {
