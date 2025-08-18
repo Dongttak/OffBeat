@@ -177,4 +177,12 @@ public class PlayerInput : MonoBehaviour
         bool ok = counterManager && counterManager.TryCounter();
         Debug.Log(ok ? "[Counter] SUCCESS" : "[Counter] FAIL");
     }
+    public void TriggerAttackFromTutorial()
+    {
+        DoAttack(); // 내부에서 AttackEvent?.Invoke() + attack.Attack() 처리
+    }
+    public void TriggerCounterFromTutorial() 
+    { 
+        DoCounter(); 
+    }
 }

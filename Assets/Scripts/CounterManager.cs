@@ -39,14 +39,23 @@ public class CounterManager : MonoBehaviour
     public void PreHint(float leadSeconds = 0.25f)
     {
         if (!showHints || _busy) return;
-
         OnCounterHintOpen?.Invoke();
-
-        if (leadSeconds > 0f)
-            Invoke(nameof(OpenWindowInternal), leadSeconds);
-        else
-            OpenWindowInternal();
+        StopCoroutine(nameof(Co_OpenAfterDelay));
+        StartCoroutine(Co_OpenAfterDelay(Mathf.Max(0f, leadSeconds)));
     }
+
+    private System.Collections.IEnumerator Co_OpenAfterDelay(float delay)
+    {
+        // 타임스케일에 영향받지 않게
+        float t = 0f;
+        while (t < delay)
+        {
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        OpenWindowInternal();
+    }
+
 
     /// <summary>바로 판정창만 열고 싶을 때(Phase2)</summary>
     public void OpenWindow(float duration = -1f)

@@ -15,7 +15,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 638911565592630021
+  lastModified: 638911680542491669
   FileSizes: []
   Exists: 1
 --- !u!114 &-7509822755275324708
@@ -53,7 +53,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 638911565592640025
+  lastModified: 638911680542511807
   FileSizes:
   - Name: 
     Value: 866
@@ -84,7 +84,7 @@ MonoBehaviour:
   Parameters: []
   MinDistance: 1
   MaxDistance: 20
-  Length: 168176
+  Length: 170176
 --- !u!114 &-5920551816022739396
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220,7 +220,7 @@ MonoBehaviour:
   StringsBanks:
   - {fileID: -6924027539058152247}
   cacheVersion: 131848
-  cacheTime: 638911565592640025
+  cacheTime: 638911680542511807
   SerializableEventsDict:
   - key: event:/ggst-counter
     index: 0
@@ -371,11 +371,11 @@ MonoBehaviour:
   - {fileID: -8320765547206785064}
   IsStream: 1
   Is3D: 0
-  IsOneShot: 1
+  IsOneShot: 0
   Parameters: []
   MinDistance: 1
   MaxDistance: 20
-  Length: 40026
+  Length: 113500
 --- !u!114 &9193261868299228122
 MonoBehaviour:
   m_ObjectHideFlags: 0
