@@ -60,7 +60,8 @@ public class BeatManager : MonoBehaviour
     // 이벤트
     public static event Action OnBeat;
     public static event Action OffBeat;
-    
+
+    private bool _suppressBeats = false;
 
     public bool IsInitialized => isInitialized;
     // 콜백에서 적재할 플래그(메인스레드에서 꺼냄)
@@ -195,6 +196,14 @@ public class BeatManager : MonoBehaviour
     {
         if (!isInitialized) return;
 
+        // === 일시정지면 비트/펄스 완전 차단 ===
+        if (_suppressBeats)
+        {
+            // 콜백에서 쌓인 것들도 비워버림(방출 금지)
+            System.Threading.Interlocked.Exchange(ref _pendingOnBeats, 0);
+            System.Threading.Interlocked.Exchange(ref _pendingHalfBeats, 0);
+            return;
+        }
         // 1) 콜백에서 쌓인 OnBeat 처리
         int onCount = System.Threading.Interlocked.Exchange(ref _pendingOnBeats, 0);
         for (int i = 0; i < onCount; i++)
@@ -252,6 +261,11 @@ public class BeatManager : MonoBehaviour
         }
     }
 
+    public void SetBeatEmissionPaused(bool paused)
+    {
+        _suppressBeats = paused;
+    }
+
     int GetTimelineMs()
     {
         if (!_useFallbackTime && musicInstance.isValid())
@@ -301,17 +315,18 @@ public class BeatManager : MonoBehaviour
     // 반 박자 뒤 OffBeat (타임스케일 무시)
     IEnumerator Co_FireOffBeatHalfStep()
     {
-        // 현 유효 interval을 사용 (속도/템포 반영)
+        // 일시정지 중이면 먼저 대기
+        while (_suppressBeats) yield return null;
+
         float stepIntervalSec = intervalMs / 1000f;
         float half = stepIntervalSec * 0.5f;
-
-        // 화면 보정(앞/뒤) 하고 싶으면 visualOffsetMs 사용
         float visual = visualOffsetMs / 1000f;
-
         float wait = Mathf.Max(0f, half + visual);
+
         float t = 0f;
         while (t < wait)
         {
+            if (_suppressBeats) yield break; // 도중에 다시 일시정지되면 중단
             t += Time.unscaledDeltaTime;
             yield return null;
         }
@@ -345,6 +360,7 @@ public class BeatManager : MonoBehaviour
     {
         if (musicInstance.isValid())
             musicInstance.setPaused(paused);
+        _suppressBeats = paused; // 음악 정지 시 비트 방출도 잠금
     }
 
     public bool IsMusicValid() => musicInstance.isValid();
