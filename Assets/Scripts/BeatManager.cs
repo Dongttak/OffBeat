@@ -15,6 +15,10 @@ public class BeatManager : MonoBehaviour
     private EventDescription musicDesc;
     private EVENT_CALLBACK beatCallback;
 
+    [Header("BPM 변속")]
+    [SerializeField]
+    [Range(0.5f, 2.0f)] private float currentSpeed = 1.0f;
+
     [Header("Tempo Settings")]
 
     [Tooltip("원하는 체감 BPM. useFmodTempo를 끄면 이 값 기준으로 OnBeat/OffBeat이 발생")]
@@ -137,12 +141,34 @@ public class BeatManager : MonoBehaviour
         }
     }
 
+    // 노래 속도 조절, 1.0f 기본
+    public void SetSpeed(float speedValue)
+    {
+        currentSpeed = Mathf.Max(0.1f, speedValue);
+
+        if (musicInstance.isValid())
+        {
+            musicInstance.setPitch(currentSpeed);
+        }
+
+        RecalculateTiming();
+
+        if (musicDesc.isValid())
+        {
+            musicDesc.getLength(out int songLenMs);
+            if (songLenMs <= 0) songLenMs = 180_000;
+            BuildJudgeZones(songLenMs);
+        }
+    }
+
     void RecalculateTiming()
     {
         // 120 BPM 고정으로 쓰려면 useFmodTempo를 꺼두고 bpm=120, stepsPerBeat=1 유지
         float basisBpm = (useFmodTempo && _lastTempoFromFmod > 0f) ? _lastTempoFromFmod : bpm;
 
-        float stepIntervalSec = 60f / Mathf.Max(1e-4f, basisBpm * stepsPerBeat);
+        float effectiveBpm = basisBpm * currentSpeed;
+
+        float stepIntervalSec = 60f / Mathf.Max(1e-4f, effectiveBpm * stepsPerBeat);
         intervalMs = Mathf.RoundToInt(stepIntervalSec * 1000f);
         float hitSec = stepIntervalSec * Mathf.Clamp01(hitWindowPercent);
         hitRangeMs = Mathf.RoundToInt(hitSec * 1000f);

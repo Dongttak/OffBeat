@@ -1,11 +1,17 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using DG.Tweening;
 
 public class UIChanger : MonoBehaviour
 {
+    public Image fadeOutImage;
+    public Image fadeInImage;
+
     private void Start()
     {
         //SoundManager.instance.PlayBGM(SoundManager.instance.lobbyBGM);
+        FadeInOnInGameScene();
     }
     public void OnClickStart_tutorial()
     {
@@ -48,5 +54,33 @@ public class UIChanger : MonoBehaviour
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
+    }
+
+    public void FadeOut()
+    {
+        fadeOutImage.gameObject.SetActive(true);
+        fadeOutImage.DOFade(1f, 3f)
+            .SetEase(Ease.Linear)
+            .OnComplete(() =>
+            {
+                SceneManager.LoadScene("InGame");
+            });
+    }
+
+    public void FadeInOnInGameScene()
+    {
+        Scene currentScene = SceneManager.GetActiveScene();
+        string sceneName = currentScene.name;
+        if (sceneName == "InGame")
+        {
+            if (fadeInImage == null) return;
+
+            fadeInImage.DOFade(0f, 3f)
+                .SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    fadeInImage.gameObject.SetActive(false);
+                });
+        }
     }
 }
