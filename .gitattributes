@@ -1,10 +1,15 @@
-*.unity  text eol=lf
-*.prefab text eol=lf
-*.asset  text eol=lf
-*.mat    text eol=lf
+*.unity text eol=lf merge=unityyamlmerge
+*.prefab text eol=lf merge=unityyamlmerge
+*.asset  text eol=lf merge=unityyamlmerge
+*.mat    text eol=lf merge=unityyamlmerge
 *.cs     text eol=lf
+*.anim   text eol=lf merge=unityyamlmerge
 
 [Ll]ibrary/ -diff -merge
 [Tt]emp/     -diff -merge
 [Oo]bj/      -diff -merge
 [Bb]uild/    -diff -merge
+
+*.unity merge=unityyamlmerge eol=lf
+*.prefab merge=unityyamlmerge eol=lf
+*.asset merge=unityyamlmerge eol=lf
