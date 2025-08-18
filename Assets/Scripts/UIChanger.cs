@@ -18,7 +18,20 @@ public class UIChanger : MonoBehaviour
         Time.timeScale = 1f;
         SceneManager.LoadScene("TitleScene");
     }
-
+    public void OnClickStartGame()
+    {
+        if (PlayerPrefs.GetInt("TutorialCompleted", 0) == 1)
+        {
+            Time.timeScale = 1f;
+            // 이미 튜토리얼을 했으면 바로 인게임
+            SceneManager.LoadScene("InGame");
+        }
+        else
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene("TutorialScene");
+        }
+    }
     public void OnClickStart_main()
     {
         //SoundManager.instance.PlayClickSound();
@@ -30,6 +43,8 @@ public class UIChanger : MonoBehaviour
     {
         //SoundManager.instance.PlayClickSound();
         Application.Quit();
+        PlayerPrefs.DeleteKey("TutorialCompleted");
+        PlayerPrefs.Save();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif

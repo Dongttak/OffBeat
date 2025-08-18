@@ -18,7 +18,6 @@ public class GameManager : MonoBehaviour
 
     [Header("UI Panels")]
     public GameObject pausePopupUI;
-    public GameObject tutorialUI;
 
     [Header("Countdown UI")]
     public TextMeshProUGUI countdownText; // 카운트다운 텍스트
@@ -65,7 +64,6 @@ public class GameManager : MonoBehaviour
         if (CurrentGameState == GameState.Paused)
         {
             pausePopupUI.SetActive(true);
-            tutorialUI.SetActive(false);
         }
         Time.timeScale = 0;
         MusicBus.setPaused(true);
@@ -77,7 +75,6 @@ public class GameManager : MonoBehaviour
         if (CurrentGameState == GameState.Paused)
         {
             pausePopupUI.SetActive(false);
-            tutorialUI.SetActive(true);
             CurrentGameState = GameState.Playing;
         }
         Time.timeScale = 1;

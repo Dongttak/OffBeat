@@ -333,7 +333,7 @@ public class TutorialGameManager : MonoBehaviour
     void UpdateCounter(int target)
     {
         float rate = (_attemptCount > 0) ? ((float)_successCount / _attemptCount * 100f) : 0f;
-        counterText?.SetText($"{rate:0}% / {target}"); // 카운트 모드: 성공률% / 목표
+        counterText?.SetText($"성공률 : {rate:0}%, 남은 횟수 : {target - _successCount}");
     }
     void UpdateTimeCounterUI()
     {
@@ -421,6 +421,8 @@ public class TutorialGameManager : MonoBehaviour
             case Step.Done:
                 promptTitle?.SetText("튜토리얼 완료");
                 promptBody?.SetText("좋아요! 이제 실전에 들어가보죠.");
+                PlayerPrefs.SetInt("TutorialCompleted", 1);
+                PlayerPrefs.Save();  // 저장 강제 반영
                 SceneButton?.gameObject.SetActive(true);
                 break;
         }
@@ -430,7 +432,7 @@ public class TutorialGameManager : MonoBehaviour
     {
         isWaitingPrompt = false;
         if (promptGroup) promptGroup.SetActive(false);
-        
+
         var es = EventSystem.current;
         if (es) es.sendNavigationEvents = true;
 

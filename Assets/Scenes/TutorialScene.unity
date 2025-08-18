@@ -4495,11 +4495,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   musicEvent:
     Guid:
-      Data1: -457861438
-      Data2: 1080772104
-      Data3: -1958469233
-      Data4: 1433621641
-    Path: event:/Music_oneTempo
+      Data1: -2073352202
+      Data2: 1170651507
+      Data3: -900520568
+      Data4: -1268513552
+    Path: event:/120bpm
   bpm: 120
   stepsPerBeat: 1
   hitWindowPercent: 0.25
@@ -4597,7 +4597,7 @@ Transform:
   m_GameObject: {fileID: 1090408315}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27417743, y: 0, z: 0, w: 0.96167916}
-  m_LocalPosition: {x: 0, y: 10, z: -20}
+  m_LocalPosition: {x: 0, y: 7.42, z: -15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4702,7 +4702,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1163535285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4718,23 +4718,23 @@ MonoBehaviour:
   steps:
   - time: 0
     lane: 0
-    prefab: {fileID: 5228334879360398370, guid: ed3401a8cffb030488278362238dc576, type: 3}
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
     localOffset: {x: 0, y: 0, z: 4}
   - time: 5
     lane: 2
-    prefab: {fileID: 5228334879360398370, guid: ed3401a8cffb030488278362238dc576, type: 3}
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
     localOffset: {x: 0, y: 0, z: 4}
   - time: 10
     lane: 0
-    prefab: {fileID: 5228334879360398370, guid: ed3401a8cffb030488278362238dc576, type: 3}
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
     localOffset: {x: 0, y: 0, z: 4}
   - time: 15
     lane: 2
-    prefab: {fileID: 5228334879360398370, guid: ed3401a8cffb030488278362238dc576, type: 3}
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
     localOffset: {x: 0, y: 0, z: 4}
   - time: 20
     lane: 0
-    prefab: {fileID: 5228334879360398370, guid: ed3401a8cffb030488278362238dc576, type: 3}
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
     localOffset: {x: 0, y: 0, z: 4}
   totalDuration: 90
   laneAnchors:
@@ -5948,6 +5948,7 @@ GameObject:
   - component: {fileID: 1423272718}
   - component: {fileID: 1423272720}
   - component: {fileID: 1423272721}
+  - component: {fileID: 1423272722}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -5969,7 +5970,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerInput: {fileID: 1792919179}
   pausePopupUI: {fileID: 1977633229}
-  tutorialUI: {fileID: 360513444}
   countdownText: {fileID: 1956617796}
 --- !u!4 &1423272717
 Transform:
@@ -6065,8 +6065,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   progressMode: 0
   startStep: 0
-  moveSuccessTarget: 5
-  attackSuccessTarget: 5
+  moveSuccessTarget: 10
+  attackSuccessTarget: 10
   specialSuccessTarget: 5
   moveDuration: 15
   attackDuration: 15
@@ -6113,6 +6113,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec8f7c3bcd016d6479efbe0ddc289af6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1423272722
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1423272715}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8145eb93154d9ce47a8884ac9c8ca3cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lockFxPrefab: {fileID: 1582275357731197809, guid: 5334360cd0cfad84bbf6855beaf10de4, type: 3}
+  laneFxParents:
+  - {fileID: 368063840}
+  - {fileID: 1991763425}
+  - {fileID: 756810233}
+  fxLocalOffset: {x: 0, y: 0, z: 5}
+  fallbackToAnchorsFromManager: 1
+  autoTestLockOnPlay: 0
 --- !u!1 &1435866911
 GameObject:
   m_ObjectHideFlags: 0
@@ -8006,7 +8026,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -0, y: -171}
-  m_SizeDelta: {x: 500, y: 100}
+  m_SizeDelta: {x: 700, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2126640338
 CanvasRenderer:

@@ -1,78 +1,136 @@
 using UnityEngine;
+using System.Collections;
 
 public class Pattern2 : MonoBehaviour, IHittable
 {
     [Header("Lane")]
-    [Range(0, 2)] public int laneIndex;   // 0:좌, 1:중, 2:우 실제론 0/2만 사용)
+    [Range(0, 2)] public int laneIndex;   // 0:좌, 1:중, 2:우 (실제론 0/2만 사용)
 
     [Header("Break Settings")]
-    public int hitsToBreak = 3;          // 맞춰야 깨짐
-    public float timeToBlock = 4.0f;     // 유예시간 경과 시 봉인
-    public float lockDuration = 4.0f;    // 봉인 유지시간
+    public int hitsToBreak = 3;          
+    public float timeToBlock = 4.0f;     // 유예시간(착지 후부터 계산)
+    public float lockDuration = 4.0f;    
+
+    [Header("Spawn Fall (낙하 연출)")]
+    public float spawnFromHeight = 6f;    // 위에서 얼마나 떨어질지
+    public float fallDuration = 0.5f;     // 요청대로 0.5초
+    public AnimationCurve fallCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public ParticleSystem landingVFX;     // 착지 먼지 등(선택)
+    public AudioClip landingSfx;          // 착지 소리(선택)
+    [Range(0,1)] public float landingSfxVolume = 0.9f;
 
     [Header("Visual")]
-    public Renderer colorRenderer;       // Sphere의 MeshRenderer 할당
-    public Color telegraphColor = new Color(1, 0, 0, 0.4f); // 소환 직후 경고색
-    public Color hitTintColor = Color.red;                  // 피격 누적 틴트
-    [Range(0f, 1f)] public float hitTintIntensity = 0.6f;    // 피격 때 섞을 정도
+    public Renderer colorRenderer;
+    public Color telegraphColor = new Color(1, 0, 0, 0.4f);
+    public Color hitTintColor = Color.red;
+    [Range(0f, 1f)] public float hitTintIntensity = 0.6f;
 
     [Header("VFX/SFX on SUCCESS (제시간 내 파괴)")]
-    public ParticleSystem successExplosionPrefab;  // 성공 이펙트
+    public ParticleSystem successExplosionPrefab;
     public AudioClip successSfx;
     [Range(0, 1)] public float successSfxVolume = 0.9f;
 
     [Header("VFX/SFX on TIMEOUT (유예 초과 → 봉인)")]
-    public ParticleSystem timeoutExplosionPrefab;  // 실패 이펙트
+    public ParticleSystem timeoutExplosionPrefab;
     public AudioClip timeoutSfx;
     [Range(0, 1)] public float timeoutSfxVolume = 0.9f;
-    public Transform vfxSpawnPoint;               // 없으면 자기 transform 사용
+    public Transform vfxSpawnPoint;
 
     int _hits;
     bool _blocked;
     bool _destroyed;
+    bool _landed; // 착지 여부
     MaterialPropertyBlock _mpb;
+    Collider[] _colliders;
+
+    void Awake()
+    {
+        if (!colorRenderer) colorRenderer = GetComponentInChildren<Renderer>();
+        _colliders = GetComponentsInChildren<Collider>(includeInactive:true);
+        _mpb = new MaterialPropertyBlock();
+    }
 
     void Start()
     {
-        if (!colorRenderer) colorRenderer = GetComponentInChildren<Renderer>();
-        _mpb = new MaterialPropertyBlock();
+        // 경고색 적용
         ApplyBaseColor(telegraphColor);
 
-        // 봉인 타이머 시작
+        // 낙하 시작: 현재 위치를 착지 지점으로 사용
+        StartCoroutine(FallInThenArmTimer());
+    }
+
+    IEnumerator FallInThenArmTimer()
+    {
+        Vector3 targetPos = transform.position;
+        Vector3 startPos = targetPos + Vector3.up * spawnFromHeight;
+
+        // 낙하 중에는 충돌 꺼두기
+        SetCollidersEnabled(false);
+        transform.position = startPos;
+
+        float t = 0f;
+        while (t < fallDuration)
+        {
+            t += Time.deltaTime;
+            float u = Mathf.Clamp01(t / fallDuration);
+            float k = fallCurve != null ? fallCurve.Evaluate(u) : u;
+            transform.position = Vector3.LerpUnclamped(startPos, targetPos, k);
+            yield return null;
+        }
+
+        transform.position = targetPos;
+        _landed = true;
+
+        // 착지 연출
+        SpawnVFX(landingVFX);
+        PlaySfx(landingSfx, landingSfxVolume);
+
+        // 충돌 가능하게
+        SetCollidersEnabled(true);
+
+        // "착지한 시점"부터 유예 타이머 시작
         if (timeToBlock > 0f) Invoke(nameof(ApplyBlockIfAlive), timeToBlock);
+    }
+
+    void SetCollidersEnabled(bool on)
+    {
+        if (_colliders == null) return;
+        foreach (var c in _colliders) if (c) c.enabled = on;
     }
 
     void ApplyBlockIfAlive()
     {
-        if (_destroyed) return;                  // 이미 파괴된 경우 무시
+        if (_destroyed) return;
         if (_hits < hitsToBreak && !_blocked)
         {
             _blocked = true;
             LaneLockManager.Instance?.LockLane(laneIndex, lockDuration);
-            PlayTimeoutVFXThenVanish();          // 실패 이펙트
+            PlayTimeoutVFXThenVanish();
         }
     }
 
     public void Hit(int damage = 1)
     {
-        if (_destroyed) return;
+        // 낙하 중에는 히트 무시 (원하면 제거)
+        if (!_landed || _destroyed) return;
+
         _hits += Mathf.Max(1, damage);
 
-        // 피격 누적 색상
         if (colorRenderer)
         {
-            Color mixed = Color.Lerp(telegraphColor, hitTintColor, Mathf.Clamp01((_hits / (float)hitsToBreak) * hitTintIntensity));
+            float p = Mathf.Clamp01((_hits / (float)hitsToBreak) * hitTintIntensity);
+            Color mixed = Color.Lerp(telegraphColor, hitTintColor, p);
             ApplyBaseColor(mixed);
         }
 
         if (_hits >= hitsToBreak)
         {
-            // 성공: 제시간 내 파괴(봉인 전)
             _destroyed = true;
-            CancelInvoke(nameof(ApplyBlockIfAlive)); // 혹시 남아있을 예약 제거
-            PlaySuccessVFXThenVanish();              // 성공 이펙트
+            CancelInvoke(nameof(ApplyBlockIfAlive));
+            PlaySuccessVFXThenVanish();
         }
     }
+
     void PlaySuccessVFXThenVanish()
     {
         SpawnVFX(successExplosionPrefab);
@@ -106,8 +164,7 @@ public class Pattern2 : MonoBehaviour, IHittable
     void DisableVisualsAndColliders()
     {
         if (colorRenderer) colorRenderer.enabled = false;
-        foreach (var col in GetComponentsInChildren<Collider>())
-            col.enabled = false;
+        SetCollidersEnabled(false);
     }
 
     void ApplyBaseColor(Color c)
