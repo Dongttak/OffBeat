@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour
     {
         if (CurrentGameState == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
         {
+            CurrentGameState = GameState.Paused;
             PauseGame();
         }
         else if (CurrentGameState == GameState.Paused && Input.GetKeyDown(KeyCode.Escape) && !isResuming)
@@ -60,18 +61,30 @@ public class GameManager : MonoBehaviour
 
     public void PauseGame()
     {
-        CurrentGameState = GameState.Paused;
-        pausePopupUI.SetActive(true);
+        if (CurrentGameState == GameState.Paused)
+        {
+            pausePopupUI.SetActive(true);
+        }
         Time.timeScale = 0;
         MusicBus.setPaused(true);
         playerInput.enabled = false; // 입력 비활성화
     }
 
+    public void ResumeGame()
+    {
+        if (CurrentGameState == GameState.Paused)
+        {
+            pausePopupUI.SetActive(false);
+            CurrentGameState = GameState.Playing;
+        }
+        Time.timeScale = 1;
+        MusicBus.setPaused(false);
+        playerInput.enabled = true; // 입력 비활성화
+    }
+
     private IEnumerator ResumeAfterDelay(float delay)
     {
         isResuming = true;
-
-        pausePopupUI.SetActive(false);
         // 카운트다운 UI 활성화
         countdownText.gameObject.SetActive(true);
 
@@ -82,14 +95,9 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSecondsRealtime(1f);
             remaining--;
         }
-
         countdownText.gameObject.SetActive(false);
-
-        CurrentGameState = GameState.Playing;
-        Time.timeScale = 1;
-        MusicBus.setPaused(false);
-        playerInput.enabled = true; // 입력 다시 활성화
         isResuming = false;
+        ResumeGame();
     }
 
     public void ReturnToTitle()
