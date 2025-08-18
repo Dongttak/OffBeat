@@ -247,14 +247,6 @@ public class TutorialGameManager : MonoBehaviour
             if (counterManager) counterManager.PreHint(0.25f); // 필요하면 인스펙터 변수 사용
         }
 
-        // 2) K: 카운터 시도 (성공/실패 카운트는 이벤트 OnCounterSuccess/OnCounterFail에서만 처리)
-        if (Input.GetKeyDown(CounterKey))
-        {
-            // 엇박 체크가 필요하면 아래 조건을 켜고, 필요 없으면 바로 TryCounter()만 호출
-            // if (OffBeatCheck())
-            if (counterManager) counterManager.TryCounter();
-        }
-
         // 남은 UI 갱신
         if (progressMode == ProgressMode.ByCount)
         {

@@ -35,6 +35,9 @@ public class BeatManager : MonoBehaviour
     [Tooltip("FMOD 콜백에서 내려주는 tempo를 쓸지 여부. 끄면 위의 bpm 고정")]
     [SerializeField] private bool useFmodTempo = false;
 
+    // 판정에도 같은 오프셋을 쓸지(권장: true)
+    [SerializeField] private bool applyVisualOffsetToJudge = true;
+
     private int intervalMs;   // 스텝 간격(ms)
     private int hitRangeMs;   // 판정 반경(ms)
     private bool isInitialized;
@@ -273,11 +276,14 @@ public class BeatManager : MonoBehaviour
             musicInstance.getTimelinePosition(out int ms);
             if (ms > 0) return ms;
         }
-
-        // fallback
         return Mathf.RoundToInt((Time.unscaledTime - _startUnscaledTime) * 1000f);
     }
-
+    int GetJudgeMs()
+    {
+        int t = GetTimelineMs();
+        if (applyVisualOffsetToJudge) t += visualOffsetMs;   // 시각과 판정 기준 일치
+        return t;
+    }
     static bool IsInZone(int t, List<JudgeZone> zones)
     {
         foreach (var z in zones)
@@ -353,8 +359,8 @@ public class BeatManager : MonoBehaviour
         pulseTargets.Remove(p);
     }
     // 외부 판정용
-    public bool IsOnBeatNow() => IsInZone(GetTimelineMs(), onBeatZones);
-    public bool IsOffBeatNow() => IsInZone(GetTimelineMs(), offBeatZones);
+    public bool IsOnBeatNow() => IsInZone(GetJudgeMs(), onBeatZones);
+    public bool IsOffBeatNow() => IsInZone(GetJudgeMs(), offBeatZones);
     // BeatManager.cs 내부
     public void SetMusicPaused(bool paused)
     {
