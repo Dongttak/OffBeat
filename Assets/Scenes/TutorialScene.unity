@@ -383,7 +383,7 @@ Transform:
   m_GameObject: {fileID: 73421754}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.1, y: 1.04, z: -8.2592}
+  m_LocalPosition: {x: 0.1, y: 0, z: -8.2592}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6100,7 +6100,7 @@ MonoBehaviour:
   pausePopupUI: {fileID: 1977633229}
   countdownText: {fileID: 1956617796}
   SceneButton: {fileID: 123994758}
-  musicBusPath: 
+  musicBusPath: event:/120bpm
 --- !u!114 &1423272721
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6278,11 +6278,11 @@ MonoBehaviour:
   CollisionTag: 
   EventReference:
     Guid:
-      Data1: -457861438
-      Data2: 1080772104
-      Data3: -1958469233
-      Data4: 1433621641
-    Path: event:/Music_oneTempo
+      Data1: -1903802788
+      Data2: 1151651328
+      Data3: -1649888094
+      Data4: -820447359
+    Path: event:/120bpm
   Event: 
   EventPlayTrigger: 1
   EventStopTrigger: 0

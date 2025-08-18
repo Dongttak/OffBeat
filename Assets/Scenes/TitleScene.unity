@@ -1251,11 +1251,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   titleBGM:
     Guid:
-      Data1: -457861438
-      Data2: 1080772104
-      Data3: -1958469233
-      Data4: 1433621641
-    Path: event:/Music_oneTempo
+      Data1: -1903802788
+      Data2: 1151651328
+      Data3: -1649888094
+      Data4: -820447359
+    Path: event:/120bpm
 --- !u!4 &1326432156
 Transform:
   m_ObjectHideFlags: 0
