@@ -4500,6 +4500,7 @@ MonoBehaviour:
       Data3: -1649888094
       Data4: -820447359
     Path: event:/120bpm
+  currentSpeed: 1
   bpm: 120
   stepsPerBeat: 1
   hitWindowPercent: 0.25
@@ -4702,7 +4703,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1163535285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4716,32 +4717,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   steps:
-  - time: 0
+  - stepIndex: 0
     lane: 0
     prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
     localOffset: {x: 0, y: 0, z: 4}
-  - time: 5
+  - stepIndex: 8
     lane: 2
     prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
     localOffset: {x: 0, y: 0, z: 4}
-  - time: 10
-    lane: 0
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
-  - time: 15
-    lane: 2
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
-  - time: 20
-    lane: 0
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
-  totalDuration: 90
   laneAnchors:
   - {fileID: 368063840}
   - {fileID: 1991763425}
   - {fileID: 756810233}
-  autoStart: 1
 --- !u!4 &1163535286
 Transform:
   m_ObjectHideFlags: 0
@@ -6054,6 +6041,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec8f7c3bcd016d6479efbe0ddc289af6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fadeOutImage: {fileID: 0}
+  fadeInImage: {fileID: 0}
 --- !u!114 &1423272722
 MonoBehaviour:
   m_ObjectHideFlags: 0
