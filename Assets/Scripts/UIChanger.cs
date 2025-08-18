@@ -61,6 +61,7 @@ public class UIChanger : MonoBehaviour
         fadeOutImage.gameObject.SetActive(true);
         fadeOutImage.DOFade(1f, 3f)
             .SetEase(Ease.Linear)
+            .SetUpdate(true)
             .OnComplete(() =>
             {
                 SceneManager.LoadScene("InGame");

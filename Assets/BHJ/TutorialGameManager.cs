@@ -67,7 +67,7 @@ public class TutorialGameManager : MonoBehaviour
     private bool isResuming = false;
 
     [Header("튜토리얼 종료 후 UI")]
-    [SerializeField] private GameObject SceneButton;
+    [SerializeField] private Button SceneButton;
 
     // ====== 자동 카운터 연습 ======
     [Header("Counter Practice (Special 단계 자동)")]
@@ -518,7 +518,14 @@ public class TutorialGameManager : MonoBehaviour
         var es = EventSystem.current;
         if (es) es.sendNavigationEvents = true;
 
-        if (_step == Step.Done) SetStep(Step.Done);
+        if (_step == Step.Done)
+        {
+            if (SceneButton)
+            {
+                SceneButton.interactable = false;
+            }
+            SetStep(Step.Done);
+        }
     }
 
     // ───────────────── 게임 상태 ─────────────────
