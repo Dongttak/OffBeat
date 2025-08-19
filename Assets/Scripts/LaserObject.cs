@@ -37,6 +37,9 @@ public class LaserObject : MonoBehaviour
     [SerializeField] private LayerMask playerMask = ~0;
     [SerializeField] private float rayDistance = 30f;
 
+    [Header("Score Manager")]
+    public ScoreManager scoreManager;
+
     int beatsRemaining;
     bool fired;
 
@@ -103,6 +106,7 @@ public class LaserObject : MonoBehaviour
             if (hit.transform.CompareTag("Player"))
             {
                 // TODO: 플레이어 피격 처리
+                scoreManager.SubtractCurrentScoreCount();
                 Debug.Log("Player Hit by Laser!");
             }
         }

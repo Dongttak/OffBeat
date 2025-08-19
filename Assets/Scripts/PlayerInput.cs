@@ -34,6 +34,9 @@ public class PlayerInput : MonoBehaviour
     [SerializeField] private bool bufferCounter = false; // 기본 false: 카운터 버퍼링 안 함
     private int posIndex = 1;
 
+    [Header("Score Manager")]
+    public ScoreManager scoreManager;
+
     //차 패턴
     public int CurrentLaneIndex => posIndex;
     // 창 상태
@@ -207,6 +210,10 @@ public class PlayerInput : MonoBehaviour
     void DoCounter()
     {
         bool ok = counterManager && counterManager.TryCounter();
+
+        if (!ok)
+            scoreManager.SubtractCurrentCounterScore();
+
         Debug.Log(ok ? "[Counter] SUCCESS" : "[Counter] FAIL");
     }
     public void TriggerAttackFromTutorial()
