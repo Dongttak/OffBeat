@@ -296,6 +296,12 @@ public class BeatManager : MonoBehaviour
                 OffBeat?.Invoke();
             }
         }
+
+        if (_musicFinished)
+        {
+            _scoreManager.Ending();
+            _musicFinished = false;
+        }
     }
 
     void PulseAll()
