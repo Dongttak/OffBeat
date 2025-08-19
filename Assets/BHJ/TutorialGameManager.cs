@@ -292,10 +292,13 @@ public class TutorialGameManager : MonoBehaviour
         _attemptCount++;
         _missCount++;
         ShowFeedback("MISS", Color.red);
-        if (_missCount >= 3) ShowTip("주변 배경을 잘 살펴보세요!", Color.red);
-
+        if (_missCount >= 3)
+        {
+            if (_step == Step.Special) ShowTip("H 키를 정박, K 키를 엇박에 눌러보세요!", Color.red);
+            else ShowTip("주변 배경을 잘 살펴보세요!", Color.red);
+        }
         if (progressMode == ProgressMode.ByTime) UpdateTimeCounterUI();
-        else UpdateCounter(specialSuccessTarget); // 성공률 표시용으로만
+            else UpdateCounter(specialSuccessTarget); // 성공률 표시용으로만
     }
 
 
@@ -477,15 +480,15 @@ public class TutorialGameManager : MonoBehaviour
         {
             case Step.Move:
                 promptTitle?.SetText("이동 튜토리얼");
-                promptBody?.SetText($"정박에 맞춰 [{moveLeftKey}] / [{moveRightKey}] 를 눌러 이동합니다.\n계속하려면 아무 키나 누르세요.");
+                promptBody?.SetText($"정박에 맞춰 [{moveLeftKey}] / [{moveRightKey}] 를 눌러 이동합니다.\n계속하려면 아래 버튼을 누르세요.");
                 break;
             case Step.Attack:
                 promptTitle?.SetText("공격 튜토리얼");
-                promptBody?.SetText($"정박에 맞춰 [{attackKey}] 를 눌러 공격합니다.\n계속하려면 아무 키나 누르세요.");
+                promptBody?.SetText($"정박에 맞춰 [{attackKey}] 를 눌러 공격합니다.\n계속하려면 아래 버튼을 누르세요.");
                 break;
             case Step.Special:
                 promptTitle?.SetText("카운터 튜토리얼");
-                promptBody?.SetText($"엇박 타이밍에 [{CounterKey}] 를 눌러 카운터합니다.\n계속하려면 아무 키나 누르세요.");
+                promptBody?.SetText($"엇박 타이밍에 [{CounterKey}] 를 눌러 카운터합니다.\n계속하려면 아래 버튼을 누르세요.");
                 break;
             case Step.Done:
                 promptTitle?.SetText("튜토리얼 완료");
