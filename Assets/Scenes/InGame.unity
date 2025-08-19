@@ -6028,7 +6028,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efbeb3a1f33ec8e4bb7e2b6134900f82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fireOrigin: {fileID: 0}
+  fireOrigin: {fileID: 605625808954861077}
   range: 30
   hittableMask:
     serializedVersion: 2
