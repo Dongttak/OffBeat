@@ -91,7 +91,6 @@ public class PatternTimeline : MonoBehaviour
         }
     }
 
-#if UNITY_EDITOR
     [ContextMenu("Rebuild Lookups")]
     void RebuildLookups_Editor() => BuildLookups();
     void OnValidate()
@@ -109,7 +108,6 @@ public class PatternTimeline : MonoBehaviour
             }
         }
     }
-#endif
 
     // ───────────────────────── Execute
     void ExecuteStep(FixedStep s)
