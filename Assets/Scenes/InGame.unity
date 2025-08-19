@@ -985,8 +985,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 200, y: 300}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 300, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &509578928
 MonoBehaviour:
@@ -1786,15 +1786,19 @@ MonoBehaviour:
       Data3: 1539302279
       Data4: -1211787849
     Path: event:/Wantyourbody
+  preloadSampleData: 1
+  waitForSampleDataBeforeStart: 1
+  sampleLoadTimeout: 1
+  fallbackArmSeconds: 1
   currentSpeed: 1
   bpm: 153
   stepsPerBeat: 1
   hitWindowPercent: 0.25
   useFmodTempo: 1
-  delayTime: 2
+  startDelayBeats: 0
   applyVisualOffsetToJudge: 1
-  pulseTargets: []
   visualOffsetMs: 0
+  pulseTargets: []
 --- !u!4 &1096053159
 Transform:
   m_ObjectHideFlags: 0
@@ -2565,7 +2569,7 @@ MonoBehaviour:
   counterManager: {fileID: 1113954334}
   beatsPerMeasure: 4
   steps:
-  - when: 0
+  - when: 1
     stepIndex: 4
     measureBeat: 
     prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}

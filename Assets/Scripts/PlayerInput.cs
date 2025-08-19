@@ -97,18 +97,14 @@ public class PlayerInput : MonoBehaviour
         // ── 카운터: 버퍼 off면 창 열렸을 때만, on이면 기존 로직 ──
         if (Input.GetKeyDown(counterKey))
         {
-            if (bufferCounter)
+            if (offOpen && !offConsumed)
             {
-                bufCounter.Set();
+                DoCounter();
+                offConsumed = true;
             }
             else
             {
-                // 창 열려있을 때만 즉시
-                if (offOpen && !offConsumed)
-                {
-                    DoCounter();
-                    offConsumed = true;
-                }
+                bufCounter.Set(); // 창 닫혀있으면 버퍼
             }
         }
 
@@ -147,10 +143,10 @@ public class PlayerInput : MonoBehaviour
         offOpen = true; offConsumed = false;
         offCloseAt = Time.unscaledTime + inputWindow;
 
-        if (!offConsumed && bufferCounter && TryConsumeOffBeatBuffered())
+        // 창이 열리는 순간, 유효한 버퍼가 있으면 즉시 소비
+        if (!offConsumed && TryConsumeOffBeatBuffered())
             offConsumed = true;
     }
-
 
     // ── 즉시 소비(창 열려 있을 때, 키다운 우선) ─────────────────
     bool TryConsumeOnBeatImmediate()
@@ -185,7 +181,6 @@ public class PlayerInput : MonoBehaviour
 
     bool TryConsumeOffBeatBuffered()
     {
-        if (!bufferCounter) return false; // 버퍼 꺼져 있으면 소비 안 함
         if (bufCounter.IsValid(bufferHold))
         {
             DoCounter();

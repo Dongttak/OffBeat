@@ -272,7 +272,7 @@ public class TutorialGameManager : MonoBehaviour
 
         _successCount++;
         OnSpecialSuccess?.Invoke();
-
+        ShowFeedback("", Color.cyan);
         if (progressMode == ProgressMode.ByCount)
         {
             UpdateCounter(specialSuccessTarget);
@@ -297,7 +297,7 @@ public class TutorialGameManager : MonoBehaviour
             else ShowTip("주변 배경을 잘 살펴보세요!", Color.red);
         }
         if (progressMode == ProgressMode.ByTime) UpdateTimeCounterUI();
-            else UpdateCounter(specialSuccessTarget); // 성공률 표시용으로만
+        else UpdateCounter(specialSuccessTarget); // 성공률 표시용으로만
     }
 
 
