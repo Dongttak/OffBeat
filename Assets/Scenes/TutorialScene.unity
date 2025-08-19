@@ -5053,7 +5053,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1163535285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5061,7 +5061,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1163535284}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e173c5125811ee949a601cc57cb16bb8, type: 3}
   m_Name: 
@@ -5073,31 +5073,7 @@ MonoBehaviour:
   spawnParent: {fileID: 0}
   counterManager: {fileID: 0}
   beatsPerMeasure: 4
-  steps:
-  - when: 0
-    stepIndex: 0
-    measureBeat: 
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    lane: 0
-    localOffset: {x: 0, y: 0.5, z: 5}
-    spawns: []
-    toggles: []
-    animators: []
-    animatorTrigger: 
-    counters: []
-    events: []
-  - when: 0
-    stepIndex: 8
-    measureBeat: 
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    lane: 2
-    localOffset: {x: 0, y: 0.5, z: 5}
-    spawns: []
-    toggles: []
-    animators: []
-    animatorTrigger: 
-    counters: []
-    events: []
+  steps: []
 --- !u!4 &1163535286
 Transform:
   m_ObjectHideFlags: 0
@@ -6596,6 +6572,21 @@ MonoBehaviour:
   attackKey: 106
   CounterKey: 107
   hintKey: 104
+  attackTutorialPrefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
+  laneAnchors:
+  - {fileID: 368063840}
+  - {fileID: 1991763425}
+  - {fileID: 756810233}
+  attackSpawnEveryOnBeats: 4
+  clearAttackSpawnsOnExit: 1
+  attackAutoDestroyAfter: 4
+  usePoolForAttack: 0
+  attackLocalOffset: {x: 0, y: 0.5, z: 5}
+  usePerLaneOffset: 0
+  perLaneLocalOffsets:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
   OnMoveLeftSuccess:
     m_PersistentCalls:
       m_Calls: []
@@ -9422,6 +9413,7 @@ MonoBehaviour:
   bufferHold: 0.25
   counterVFX: {fileID: 0}
   bufferCounter: 0
+  scoreManager: {fileID: 0}
 --- !u!1 &1651519668805774399
 GameObject:
   m_ObjectHideFlags: 0

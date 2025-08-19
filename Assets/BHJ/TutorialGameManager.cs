@@ -43,8 +43,24 @@ public class TutorialGameManager : MonoBehaviour
     [SerializeField] private KeyCode attackKey = KeyCode.J;   // 정박-공격
     [SerializeField] private KeyCode CounterKey = KeyCode.K;  // 엇박-카운터
                                                               // 추가: 수동 스폰용 키
-    [SerializeField] private KeyCode hintKey = KeyCode.H;
+    [Header("Attack Tutorial Spawner")]
+    [SerializeField] private GameObject attackTutorialPrefab;
+    [SerializeField] private Transform[] laneAnchors; // 0,1,2
+    [SerializeField] private int attackSpawnEveryOnBeats = 2;
+    [SerializeField] private bool clearAttackSpawnsOnExit = true;
+    [SerializeField] private float attackAutoDestroyAfter = 0f;
+    [SerializeField] private bool usePoolForAttack = false;
 
+    [Header("Spawn Position")]
+    [SerializeField, Tooltip("앵커(레인 Transform) 기준 Local Offset (X,Y,Z)")]
+    private Vector3 attackLocalOffset = new Vector3(0f, 0.5f, 5f); private int _attackOnBeatCounter = 0;  // 박자 카운터
+    [SerializeField, Tooltip("레인별로 별도 오프셋을 주고 싶으면 체크")]
+    private bool usePerLaneOffset = false;
+
+    [SerializeField, Tooltip("usePerLaneOffset 사용 시 0/1/2 각각의 추가 오프셋")]
+    private Vector3[] perLaneLocalOffsets = new Vector3[3];  // 기본값(0,0,0)
+    private int _attackLaneToggle = 0;     // 0 -> lane 0, 1 -> lane 2
+    private readonly System.Collections.Generic.List<GameObject> _attackSpawned = new();
 
     [Header("액션 이벤트(옵션)")]
     public UnityEvent OnMoveLeftSuccess;
@@ -105,6 +121,7 @@ public class TutorialGameManager : MonoBehaviour
             counterManager.OnCounterSuccess += OnCounterSucceeded;
             counterManager.OnCounterFail += OnCounterFailed;
         }
+        BeatManager.OnBeat += OnBeat_Bridge;
     }
 
     private void OnDisable()
@@ -114,8 +131,13 @@ public class TutorialGameManager : MonoBehaviour
             counterManager.OnCounterSuccess -= OnCounterSucceeded;
             counterManager.OnCounterFail -= OnCounterFailed;
         }
+        BeatManager.OnBeat -= OnBeat_Bridge;
     }
-
+    private void OnBeat_Bridge()
+    {
+        AttackTutorial_OnBeat();       // 공격 튜토리얼용 스폰
+        HandleOnBeat_ForPractice();    // 기존 Special(카운터) 연습용
+    }
 
     private void Start()
     {
@@ -244,12 +266,6 @@ public class TutorialGameManager : MonoBehaviour
 
     void HandleSpecialStep()
     {
-        // 1) H: 힌트 → leadSeconds 후 창 오픈 (UI가 보이려면 CounterUIController 세팅 필요)
-        if (Input.GetKeyDown(hintKey))
-        {
-            if (counterManager) counterManager.PreHint(0.25f); // 필요하면 인스펙터 변수 사용
-        }
-
         // 남은 UI 갱신
         if (progressMode == ProgressMode.ByCount)
         {
@@ -346,6 +362,9 @@ public class TutorialGameManager : MonoBehaviour
 
     private void SetStep(Step s)
     {
+        if (_step == Step.Attack && s != Step.Attack)
+            CleanupAttackSpawns();
+
         _step = s;
         _successCount = 0;
         _attemptCount = 0;
@@ -360,6 +379,8 @@ public class TutorialGameManager : MonoBehaviour
             case Step.Attack:
                 SetUI("공격", $"[{attackKey}] 로 공격", 0);
                 InitStepTimerIfNeeded(attackDuration);
+                _attackOnBeatCounter = 0;
+                _attackLaneToggle = 0;
                 break;
             case Step.Special:
                 SetUI("엇박 카운터", $"엇박 타이밍에 [{CounterKey}] 를 눌러 카운터하세요.", 0);
@@ -381,6 +402,18 @@ public class TutorialGameManager : MonoBehaviour
                 case Step.Special: UpdateCounter(specialSuccessTarget); break;
             }
         }
+    }
+    private void CleanupAttackSpawns()
+    {
+        if (!clearAttackSpawnsOnExit) return;
+        for (int i = _attackSpawned.Count - 1; i >= 0; --i)
+        {
+            var go = _attackSpawned[i];
+            if (!go) continue;
+            if (usePoolForAttack) PoolManager.ReturnObjectToPool(go);
+            else Destroy(go);
+        }
+        _attackSpawned.Clear();
     }
 
     private void InitStepTimerIfNeeded(float duration)
@@ -604,4 +637,61 @@ public class TutorialGameManager : MonoBehaviour
         if (playerInput != null)
             playerInput.enabled = enabled;
     }
+    private void AttackTutorial_OnBeat()
+    {
+        // 조건: 공격 단계 & 진행 중(일시정지/프롬프트 아님)
+        if (_step != Step.Attack) return;
+        if (isWaitingPrompt) return;
+        if (CurrentGameState != GameState.Playing) return;
+        if (!attackTutorialPrefab) return;
+        if (laneAnchors == null || laneAnchors.Length < 3) return;
+
+        _attackOnBeatCounter++;
+        if (_attackOnBeatCounter % Mathf.Max(1, attackSpawnEveryOnBeats) != 0) return;
+
+        // 0 ↔ 2 번갈아
+        int lane = (_attackLaneToggle == 0) ? 0 : 2;
+        _attackLaneToggle ^= 1;
+
+        SpawnAttackAtLane(lane);
+    }
+
+    private void SpawnAttackAtLane(int lane)
+    {
+        lane = Mathf.Clamp(lane, 0, 2);
+        var anchor = laneAnchors[lane];
+        if (!anchor) return;
+
+        // Local Offset 계산 (공통 + 선택적 레인별)
+        Vector3 offset = attackLocalOffset;
+        if (usePerLaneOffset && perLaneLocalOffsets != null && perLaneLocalOffsets.Length > lane)
+            offset += perLaneLocalOffsets[lane];
+
+        // 앵커(레인 Transform) 로컬 기준으로 배치
+        Vector3 spawnPos = anchor.TransformPoint(offset);
+        Quaternion spawnRot = anchor.rotation;
+
+        GameObject go = usePoolForAttack
+            ? PoolManager.SpawnObject(attackTutorialPrefab, spawnPos, spawnRot)
+            : Instantiate(attackTutorialPrefab, spawnPos, spawnRot);
+
+        var p2 = go.GetComponent<Pattern2>();
+        if (p2) p2.laneIndex = lane;
+
+        _attackSpawned.Add(go);
+
+        if (attackAutoDestroyAfter > 0f)
+        {
+            if (usePoolForAttack) StartCoroutine(Co_ReturnAfter(go, attackAutoDestroyAfter));
+            else Destroy(go, attackAutoDestroyAfter);
+        }
+    }
+
+    // 풀 사용 시 자동 반납용 (없으면 무시됨)
+    private IEnumerator Co_ReturnAfter(GameObject go, float t)
+    {
+        yield return new WaitForSeconds(t);
+        if (go) PoolManager.ReturnObjectToPool(go);
+    }
+
 }

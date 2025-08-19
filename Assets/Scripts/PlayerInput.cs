@@ -59,6 +59,7 @@ public class PlayerInput : MonoBehaviour
     {
         if (!counterManager) counterManager = FindObjectOfType<CounterManager>();
         if (!attack) attack = FindObjectOfType<PlayerAttack>();
+        if (!scoreManager) scoreManager = FindObjectOfType<ScoreManager>(); // ← 추가
     }
 
     void OnEnable()
@@ -164,8 +165,8 @@ public class PlayerInput : MonoBehaviour
         // 창 열려있는 동안 눌렸다면 즉시 처리
         if (Input.GetKeyDown(counterKey)) { DoCounter(); return true; }
 
-        // 버퍼를 쓰는 경우에만 버퍼 소비 시도
-        return bufferCounter && TryConsumeOffBeatBuffered();
+        // 버퍼도 항상 소비 시도(창 열려 있고 아직 소비 안 했을 때)
+        return TryConsumeOffBeatBuffered();
     }
 
 
@@ -209,13 +210,19 @@ public class PlayerInput : MonoBehaviour
 
     void DoCounter()
     {
-        bool ok = counterManager && counterManager.TryCounter();
+        bool ok = (counterManager != null) && counterManager.TryCounter();
 
         if (!ok)
-            scoreManager.SubtractCurrentCounterScore();
+        {
+            if (scoreManager != null)
+                scoreManager.SubtractCurrentCounterScore();
+            else
+                Debug.LogWarning("[Counter] FAIL, but ScoreManager is null → no penalty applied.");
+        }
 
         Debug.Log(ok ? "[Counter] SUCCESS" : "[Counter] FAIL");
     }
+
     public void TriggerAttackFromTutorial()
     {
         DoAttack(); // 내부에서 AttackEvent?.Invoke() + attack.Attack() 처리
