@@ -2535,9 +2535,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   laneAnchors:
-  - {fileID: 1113761986}
-  - {fileID: 359066315}
-  - {fileID: 1323350758}
+  - {fileID: 872281468}
+  - {fileID: 1430245836}
+  - {fileID: 1611178170}
   spawnParent: {fileID: 0}
   counterManager: {fileID: 1113954334}
   beatsPerMeasure: 4
@@ -3706,6 +3706,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 7463405499644600633, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 7525506333740417026, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
       propertyPath: m_Constraints
       value: 80
@@ -3768,6 +3772,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7463405499644600633, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6692213568136283687}
+    - targetCorrespondingSourceObject: {fileID: 7463405499644600633, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6692213568136283692}
   m_SourcePrefab: {fileID: 100100000, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
 --- !u!4 &6692213568136283684 stripped
 Transform:
@@ -3824,6 +3831,14 @@ MonoBehaviour:
   - {fileID: 359066315}
   - {fileID: 1323350758}
   playerInput: {fileID: 6692213568136283685}
+--- !u!81 &6692213568136283692
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6692213568136283686}
+  m_Enabled: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
