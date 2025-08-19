@@ -3163,6 +3163,68 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1971662166
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1971662168}
+  - component: {fileID: 1971662167}
+  m_Layer: 0
+  m_Name: CounterTester
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1971662167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1971662166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59cd9fd3dd59fd445a36f8cd3012d292, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  counter: {fileID: 0}
+  steps:
+  - targetBeatIndex: 4
+    preHintBeats: 1
+    windowBeats: 0.5
+    requireOffBeat: 0
+  - targetBeatIndex: 8
+    preHintBeats: 0.5
+    windowBeats: 0.5
+    requireOffBeat: 0
+  - targetBeatIndex: 12
+    preHintBeats: 1.5
+    windowBeats: 0.5
+    requireOffBeat: 0
+  unitsAreBeats: 1
+  startAfterBeats: 0
+  loop: 0
+  muteEmission: 0
+--- !u!4 &1971662168
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1971662166}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.5409333, y: 1.9125873, z: -7.490414}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2018533682
 GameObject:
   m_ObjectHideFlags: 0
@@ -3382,7 +3444,7 @@ MonoBehaviour:
   successGroup: {fileID: 509578930}
   fadeTime: 0.12
   successFlashTime: 0.35
-  showHintUI: 0
+  showHintUI: 1
   showWindowUI: 0
   showSuccessUI: 1
 --- !u!4 &2109486747
@@ -7075,3 +7137,4 @@ SceneRoots:
   - {fileID: 1763526914}
   - {fileID: 2018533686}
   - {fileID: 951513057}
+  - {fileID: 1971662168}
