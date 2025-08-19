@@ -5,47 +5,39 @@ using UnityEngine.UI;
 
 public class LaserObject : MonoBehaviour
 {
-    [SerializeField] private float timetoLaser;
-    [SerializeField] private float warningtime;
+    [SerializeField] private double beattoLaser;
+    [SerializeField] private double warningbeat;
+
+    [SerializeField] private double timetoLaser;
+    [SerializeField] private double warningtime;
+
+    public double bpm = 153;
+    [SerializeField]private double beattosec;
+    int beatsPassed;
+
     public Image img;
+
     private RaycastHit hit;
     private bool attackrequired;
-    Vector3 tr;
+    private Vector3 tr;
+
     public AudioSource audio;
     public GameObject laserEffect;
 
     private void Update()
     {
         timetoLaser -= Time.deltaTime;
-        img.fillAmount = timetoLaser / warningtime;
+        img.fillAmount = (float)(timetoLaser / warningtime);
     }
 
     private void OnEnable()
     {
         Debug.Log("Spawn Laser");
-        timetoLaser = warningtime;
-        StartCoroutine(Pattern());
-    }
-
-    private void LateUpdate()
-    {
-        if (attackrequired)
-        {
-            StartCoroutine(LaserAttack());
-        }
-    }
-
-    void OnDrawGizmos()
-    {
-        tr = transform.position + Vector3.up;
-        Gizmos.color = Color.red;
-        Gizmos.DrawRay(tr, Vector3.back * 30);
-    }
-
-    IEnumerator Pattern()
-    {
-        yield return new WaitUntil(() => timetoLaser <= 0);
-        attackrequired = true;
+        beattosec = 60.0 / bpm;
+        timetoLaser = beattosec * warningbeat;
+        warningtime = beattosec * warningbeat;
+        beatsPassed = 2;
+        BeatManager.OnBeat += OnBeat;
     }
 
     IEnumerator LaserAttack()
@@ -67,4 +59,17 @@ public class LaserObject : MonoBehaviour
         yield return new WaitUntil(() => !audio.isPlaying);
         Destroy(gameObject);
     }
+    
+    void OnDisable()
+    {
+        BeatManager.OnBeat -= OnBeat;
+    }
+
+    void OnBeat()
+    {
+        beatsPassed--;
+        if (beatsPassed == 0)
+            StartCoroutine(LaserAttack());
+    }
+
 }

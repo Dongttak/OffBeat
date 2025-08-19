@@ -252,8 +252,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddd561db07f1b3941b1d123eb3196f65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  beattoLaser: 0
+  warningbeat: 2
   timetoLaser: 0
-  warningtime: 2
+  warningtime: 0
+  bpm: 153
+  beattosec: 0
   img: {fileID: 9090809479356061269}
   audio: {fileID: -3522413647997483662}
   laserEffect: {fileID: 4972329377520646064}
@@ -267,9 +271,9 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: b103f9d4e304eeb4291787b9d002dc35, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 51dbd659cf8535d46a9359299ba8ab26, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.6
   m_Pitch: 1
   Loop: 0
   Mute: 0
