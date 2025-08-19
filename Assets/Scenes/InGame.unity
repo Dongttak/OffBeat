@@ -1198,7 +1198,9 @@ MonoBehaviour:
   stepsPerBeat: 1
   hitWindowPercent: 0.25
   useFmodTempo: 1
+  applyVisualOffsetToJudge: 1
   pulseTargets: []
+  visualOffsetMs: 0
 --- !u!4 &1096053159
 Transform:
   m_ObjectHideFlags: 0
@@ -2611,17 +2613,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5842831149087366638, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
   m_PrefabInstance: {fileID: 1781195898}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1781195900 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3216562050575402707, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
-  m_PrefabInstance: {fileID: 1781195898}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1781195901 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3410041369563077183, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
@@ -2650,8 +2641,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3d1e5b498224544ea3c67734b029ad5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  musicSlider: {fileID: 1781195901}
-  sfxSlider: {fileID: 1781195900}
+  mainSlider: {fileID: 1781195901}
 --- !u!1 &1791830469
 GameObject:
   m_ObjectHideFlags: 0

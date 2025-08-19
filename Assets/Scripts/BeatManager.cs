@@ -81,6 +81,8 @@ public class BeatManager : MonoBehaviour
         public int timesig_numerator;
         public int timesig_denominator;
     }
+    private float _mainVolume = 1f;  // 0~1
+    public float GetMainVolume() => _mainVolume;
 
     void Awake()
     {
@@ -93,6 +95,7 @@ public class BeatManager : MonoBehaviour
 
     void Start()
     {
+        _mainVolume = PlayerPrefs.GetFloat("main_volume", 1f);
         InitAndStartMusic();
     }
 
@@ -116,6 +119,7 @@ public class BeatManager : MonoBehaviour
         musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
 
         musicInstance.start();
+        musicInstance.setVolume(_mainVolume);
         isInitialized = true;
 
         // FMOD 타임라인이 0만 줄 경우 대비
@@ -370,4 +374,11 @@ public class BeatManager : MonoBehaviour
     }
 
     public bool IsMusicValid() => musicInstance.isValid();
+    public void SetMainVolume(float v)
+    {
+        _mainVolume = Mathf.Clamp01(v);
+        if (musicInstance.isValid())
+            musicInstance.setVolume(_mainVolume);
+        PlayerPrefs.SetFloat("main_volume", _mainVolume); // (선택) 저장
+    }
 }

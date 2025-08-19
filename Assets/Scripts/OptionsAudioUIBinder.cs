@@ -1,27 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class OptionsAudioUIBinder : MonoBehaviour
 {
-    [SerializeField] private Slider musicSlider;
-    [SerializeField] private Slider sfxSlider;
+    [SerializeField] private Slider mainSlider; // Min=0, Max=1, Whole Numbers 꺼짐
 
-    void Start()
+    void OnEnable()
     {
-        if (!GameAudioManager.Instance) return;
+        StartCoroutine(BindWhenReady());
+    }
 
-        musicSlider.SetValueWithoutNotify(GameAudioManager.Instance.GetMusicVolume());
-        sfxSlider.SetValueWithoutNotify(GameAudioManager.Instance.GetSFXVolume());
+    System.Collections.IEnumerator BindWhenReady()
+    {
+        // BeatManager가 Init 끝낼 때까지 대기 (씬 초기화 순서 대비)
+        while (BeatManager.Instance == null || !BeatManager.Instance.IsInitialized)
+            yield return null;
 
-        musicSlider.onValueChanged.AddListener(v => GameAudioManager.Instance.SetMusicVolume(v));
-        sfxSlider.onValueChanged.AddListener(v => GameAudioManager.Instance.SetSFXVolume(v));
-
-        GameAudioManager.Instance.OnVolumeChanged += (m, s) =>
-        {
-            musicSlider.SetValueWithoutNotify(m);
-            sfxSlider.SetValueWithoutNotify(s);
-        };
+        var bm = BeatManager.Instance;
+        mainSlider.SetValueWithoutNotify(bm.GetMainVolume());
+        mainSlider.onValueChanged.RemoveAllListeners();
+        mainSlider.onValueChanged.AddListener(v => bm.SetMainVolume(v));
     }
 }

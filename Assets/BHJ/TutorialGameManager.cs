@@ -87,7 +87,10 @@ public class TutorialGameManager : MonoBehaviour
     private bool isWaitingPrompt = false;
     private float _stepTimeLeft = 0f;
     private int _practiceOnBeatCounter = 0;
-
+    // 전역 ESC 잠금 (어디서든 켜고 끌 수 있게)
+    public static bool EscLocked { get; private set; } = false;
+    public static void LockEsc() => EscLocked = true;
+    public static void UnlockEsc() => EscLocked = false;
     // ───────────────── Unity Lifecycle ─────────────────
     private void Awake()
     {
@@ -151,8 +154,8 @@ public class TutorialGameManager : MonoBehaviour
             return;
         }
 
-        // ESC 제어(프롬프트/카운트다운 중엔 차단)
-        bool blockEsc = isWaitingPrompt || isResuming;
+        // ESC 제어(프롬프트/카운트다운/페이드 중엔 차단)
+        bool blockEsc = isWaitingPrompt || isResuming || EscLocked; // ✨ 추가: EscLocked
         if (!blockEsc)
         {
             if (CurrentGameState == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))

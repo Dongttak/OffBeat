@@ -58,6 +58,7 @@ public class UIChanger : MonoBehaviour
 
     public void FadeOut()
     {
+        TutorialGameManager.LockEsc(); // ✨ 페이드 동안 ESC 완전 차단
         fadeOutImage.gameObject.SetActive(true);
         fadeOutImage.DOFade(1f, 3f)
             .SetEase(Ease.Linear)
@@ -75,12 +76,13 @@ public class UIChanger : MonoBehaviour
         if (sceneName == "InGame")
         {
             if (fadeInImage == null) return;
-
+            GameManager.LockEsc(); // ✨ 페이드 동안 ESC 완전 차단
             fadeInImage.DOFade(0f, 3f)
                 .SetEase(Ease.Linear)
                 .OnComplete(() =>
                 {
                     fadeInImage.gameObject.SetActive(false);
+                    GameManager.UnlockEsc();
                 });
         }
     }

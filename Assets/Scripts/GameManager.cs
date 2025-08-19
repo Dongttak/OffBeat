@@ -27,6 +27,10 @@ public class GameManager : MonoBehaviour
 #if FMOD
     private FMOD.Studio.Bus musicBus;
 #endif
+    // 전역 ESC 잠금 (어디서든 켜고 끌 수 있게)
+    public static bool EscLocked { get; private set; } = false;
+    public static void LockEsc() => EscLocked = true;
+    public static void UnlockEsc() => EscLocked = false;
     private void Awake()
     {
         if (instance == null) instance = this;
@@ -52,8 +56,8 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // ESC 입력: 프롬프트/카운트다운 중에는 차단
-        bool blockEsc = isWaitingPrompt || isResuming;
+        // ESC 입력: 프롬프트/카운트다운/페이드 중에는 차단
+        bool blockEsc = isWaitingPrompt || isResuming || EscLocked; // ✨ 추가: EscLocked
         if (!blockEsc)
         {
             if (CurrentGameState == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
