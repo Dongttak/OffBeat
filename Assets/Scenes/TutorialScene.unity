@@ -4700,10 +4700,10 @@ MonoBehaviour:
   stepsPerBeat: 1
   hitWindowPercent: 0.25
   useFmodTempo: 1
-  delayTime: 2
+  startDelayBeats: 0
   applyVisualOffsetToJudge: 1
-  pulseTargets: []
   visualOffsetMs: 0
+  pulseTargets: []
 --- !u!1 &1090408315
 GameObject:
   m_ObjectHideFlags: 0
@@ -4959,31 +4959,7 @@ MonoBehaviour:
   spawnParent: {fileID: 0}
   counterManager: {fileID: 0}
   beatsPerMeasure: 4
-  steps:
-  - when: 0
-    stepIndex: 0
-    measureBeat: 
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    lane: 0
-    localOffset: {x: 0, y: 0, z: 4}
-    spawns: []
-    toggles: []
-    animators: []
-    animatorTrigger: 
-    counters: []
-    events: []
-  - when: 0
-    stepIndex: 8
-    measureBeat: 
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    lane: 2
-    localOffset: {x: 0, y: 0, z: 4}
-    spawns: []
-    toggles: []
-    animators: []
-    animatorTrigger: 
-    counters: []
-    events: []
+  steps: []
 --- !u!4 &1163535286
 Transform:
   m_ObjectHideFlags: 0

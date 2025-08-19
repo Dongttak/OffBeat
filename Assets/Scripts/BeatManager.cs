@@ -5,6 +5,8 @@ using UnityEngine;
 using FMODUnity;
 using FMOD.Studio;
 using System.Collections;
+using STOP_MODE = FMOD.Studio.STOP_MODE;
+using LOADING_STATE = FMOD.Studio.LOADING_STATE; // (옵션) 위 상태코드도 별칭으로
 
 public class BeatManager : MonoBehaviour
 {
@@ -16,44 +18,50 @@ public class BeatManager : MonoBehaviour
     private EventDescription musicDesc;
     private EVENT_CALLBACK beatCallback;
 
+    [Header("FMOD Loading & Latency")]
+    [Tooltip("이벤트의 샘플 데이터를 사전에 로드")]
+    [SerializeField] private bool preloadSampleData = true;
+    [Tooltip("샘플 로드가 끝날 때까지 재생 시작을 대기")]
+    [SerializeField] private bool waitForSampleDataBeforeStart = true;
+    [Tooltip("샘플 로드 대기 타임아웃(초)")]
+    [SerializeField] private float sampleLoadTimeout = 1.0f;
+    [Tooltip("초기 N초 동안은 소프트 폴백(가상 타임라인) 비트 발생 금지")]
+    [SerializeField] private float fallbackArmSeconds = 1.0f;
+
     [Header("BPM 변속")]
-    [SerializeField]
-    [Range(0.5f, 2.0f)] private float currentSpeed = 1.0f;
+    [SerializeField, Range(0.5f, 2.0f)] private float currentSpeed = 1.0f;
 
     [Header("Tempo Settings")]
-
-    [Tooltip("원하는 체감 BPM. useFmodTempo를 끄면 이 값 기준으로 OnBeat/OffBeat이 발생")]
     [SerializeField] private float bpm = 120f;
-
-    [Tooltip("한 박자당 스텝 수 (4분음표=1, 8분음표=2)")]
     [SerializeField] private float stepsPerBeat = 1f;
-
-    [Tooltip("판정 윈도우 폭 (스텝 길이의 %)")]
     [Range(0f, 1f)][SerializeField] private float hitWindowPercent = 0.25f;
 
     [Header("Beat Source")]
-    [Tooltip("FMOD 콜백에서 내려주는 tempo를 쓸지 여부. 끄면 위의 bpm 고정")]
     [SerializeField] private bool useFmodTempo = false;
 
-    [Header("시작 딜레이")]
-    [SerializeField] private int delayTime = 2;    // 페이드인 시간 동안 박자 판정 딜레이, 정박/엇박 구간도 (기존 + delayTime)
+    [Header("시작 딜레이(박자)")]
+    [SerializeField] private int startDelayBeats = 0;
 
-    // 판정에도 같은 오프셋을 쓸지(권장: true)
+    [Header("판정 보정")]
     [SerializeField] private bool applyVisualOffsetToJudge = true;
+    [SerializeField] private int visualOffsetMs = 0;
 
-    private int intervalMs;   // 스텝 간격(ms)
-    private int hitRangeMs;   // 판정 반경(ms)
+    // 계산 값
+    private int intervalMs;
+    private int hitRangeMs;
     private bool isInitialized;
 
     private float _lastTempoFromFmod = -1f;
 
-    // 타임라인 기반 beat emission
+    // 비트 방출 상태
     private int _lastBeatIndex = -1;
     private bool _offEmittedForThisBeat = false;
 
-    // 폴백용 (FMOD 타임라인이 0만 주는 환경)
+    // 폴백 타임라인
     private float _startUnscaledTime;
     private bool _useFallbackTime = false;
+    private float _fallbackArmAt = 0f;   // 이 시점 전에는 폴백 금지
+    private bool _sawAnyFmodBeat = false;
 
     // 판정 영역
     private struct JudgeZone { public int startMs, endMs; }
@@ -70,23 +78,21 @@ public class BeatManager : MonoBehaviour
     private bool _suppressBeats = false;
     private volatile bool _tempoDirty = false;
 
-
     public bool IsInitialized => isInitialized;
-    // 콜백에서 적재할 플래그(메인스레드에서 꺼냄)
+
+    // 콜백 적재
     private int _pendingOnBeats = 0;
     private int _pendingHalfBeats = 0;
-    // FMOD 콜백에서 내려주는 속성
+
     [StructLayout(LayoutKind.Sequential)]
     struct TimelineBeatProperties
     {
-        public int bar;
-        public int beat;
-        public int position;   // ms
+        public int bar, beat, position;
         public float tempo;
-        public int timesig_numerator;
-        public int timesig_denominator;
+        public int timesig_numerator, timesig_denominator;
     }
-    private float _mainVolume = 1f;  // 0~1
+
+    private float _mainVolume = 1f;
     public float GetMainVolume() => _mainVolume;
 
     void Awake()
@@ -101,13 +107,35 @@ public class BeatManager : MonoBehaviour
     void Start()
     {
         _mainVolume = PlayerPrefs.GetFloat("main_volume", 1f);
-        InitAndStartMusic();
+        StartCoroutine(Co_InitAndStartMusic());
     }
 
-    void InitAndStartMusic()
+    IEnumerator Co_InitAndStartMusic()
     {
         musicInstance = RuntimeManager.CreateInstance(musicEvent);
         musicDesc = RuntimeManager.GetEventDescription(musicEvent);
+
+        // 샘플 선로딩
+        if (preloadSampleData && musicDesc.isValid())
+        {
+            musicDesc.loadSampleData();
+            if (waitForSampleDataBeforeStart)
+            {
+                float end = Time.unscaledTime + sampleLoadTimeout;
+                bool loaded = false;
+                while (Time.unscaledTime < end)
+                {
+                    if (musicDesc.isValid())
+                    {
+                        FMOD.Studio.LOADING_STATE state;
+                        musicDesc.getSampleLoadingState(out state);
+                        if (state == FMOD.Studio.LOADING_STATE.LOADED) break;
+                    }
+                    RuntimeManager.StudioSystem.update();
+                    yield return null;
+                }
+            }
+        }
 
         int songLenMs = 180_000;
         if (musicDesc.isValid())
@@ -119,21 +147,25 @@ public class BeatManager : MonoBehaviour
         RecalculateTiming();
         BuildJudgeZones(songLenMs);
 
-        // 콜백 등록 (tempo 추출용)
+        // 콜백 등록 (tempo 추출/비트 적재)
         beatCallback = TimelineBeatCallback;
         musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
 
+        // 재생
         musicInstance.start();
         musicInstance.setVolume(_mainVolume);
-        isInitialized = true;
 
-        // FMOD 타임라인이 0만 줄 경우 대비
+        // 폴백 지연 암(초기엔 FMOD 타임라인이 0일 수 있음)
+        _fallbackArmAt = Time.unscaledTime + Mathf.Max(0f, fallbackArmSeconds);
+        _useFallbackTime = false;
+        _sawAnyFmodBeat = false;
+
+        // 폴백 기준 시각
         musicInstance.getTimelinePosition(out int pos);
-        if (pos == 0)
-        {
-            _useFallbackTime = true;
-            _startUnscaledTime = Time.unscaledTime;
-        }
+        if (pos <= 0) _startUnscaledTime = Time.unscaledTime;
+
+        isInitialized = true;
+        yield break;
     }
 
     public void SetSongLengthSeconds(float seconds)
@@ -149,7 +181,6 @@ public class BeatManager : MonoBehaviour
         if (newHitWindowPercent.HasValue) hitWindowPercent = Mathf.Clamp01(newHitWindowPercent.Value);
 
         RecalculateTiming();
-
         if (musicDesc.isValid())
         {
             musicDesc.getLength(out int songLenMs);
@@ -158,18 +189,12 @@ public class BeatManager : MonoBehaviour
         }
     }
 
-    // 노래 속도 조절, 1.0f 기본
     public void SetSpeed(float speedValue)
     {
         currentSpeed = Mathf.Max(0.1f, speedValue);
-
-        if (musicInstance.isValid())
-        {
-            musicInstance.setPitch(currentSpeed);
-        }
+        if (musicInstance.isValid()) musicInstance.setPitch(currentSpeed);
 
         RecalculateTiming();
-
         if (musicDesc.isValid())
         {
             musicDesc.getLength(out int songLenMs);
@@ -180,15 +205,13 @@ public class BeatManager : MonoBehaviour
 
     void RecalculateTiming()
     {
-        // 120 BPM 고정으로 쓰려면 useFmodTempo를 꺼두고 bpm=120, stepsPerBeat=1 유지
         float basisBpm = (useFmodTempo && _lastTempoFromFmod > 0f) ? _lastTempoFromFmod : bpm;
-
         float effectiveBpm = basisBpm * currentSpeed;
 
         float stepIntervalSec = 60f / Mathf.Max(1e-4f, effectiveBpm * stepsPerBeat);
-        intervalMs = Mathf.RoundToInt(stepIntervalSec * 1000f);
+        intervalMs = Mathf.Max(1, Mathf.RoundToInt(stepIntervalSec * 1000f));
         float hitSec = stepIntervalSec * Mathf.Clamp01(hitWindowPercent);
-        hitRangeMs = Mathf.RoundToInt(hitSec * 1000f);
+        hitRangeMs = Mathf.Max(0, Mathf.RoundToInt(hitSec * 1000f));
     }
 
     void BuildJudgeZones(int songLenMs)
@@ -196,12 +219,14 @@ public class BeatManager : MonoBehaviour
         onBeatZones.Clear();
         offBeatZones.Clear();
 
+        int delayMs = Mathf.Max(0, startDelayBeats) * Mathf.Max(1, intervalMs);
+
         for (int t = 0; t <= songLenMs; t += intervalMs)
-            onBeatZones.Add(new JudgeZone { startMs = (t + delayTime) - hitRangeMs, endMs = (t + delayTime) + hitRangeMs });
+            onBeatZones.Add(new JudgeZone { startMs = (t + delayMs) - hitRangeMs, endMs = (t + delayMs) + hitRangeMs });
 
         int offset = intervalMs / 2;
         for (int t = offset; t <= songLenMs; t += intervalMs)
-            offBeatZones.Add(new JudgeZone { startMs = (t + delayTime) - hitRangeMs, endMs = (t + delayTime) + hitRangeMs });
+            offBeatZones.Add(new JudgeZone { startMs = (t + delayMs) - hitRangeMs, endMs = (t + delayMs) + hitRangeMs });
     }
 
     void Update()
@@ -219,40 +244,37 @@ public class BeatManager : MonoBehaviour
         }
         if (!isInitialized) return;
 
-        // === 일시정지면 비트/펄스 완전 차단 ===
         if (_suppressBeats)
         {
-            // 콜백에서 쌓인 것들도 비워버림(방출 금지)
             System.Threading.Interlocked.Exchange(ref _pendingOnBeats, 0);
             System.Threading.Interlocked.Exchange(ref _pendingHalfBeats, 0);
             return;
         }
-        // 1) 콜백에서 쌓인 OnBeat 처리
+
+        // 1) 콜백에서 쌓인 OnBeat
         int onCount = System.Threading.Interlocked.Exchange(ref _pendingOnBeats, 0);
         for (int i = 0; i < onCount; i++)
         {
             OnBeat?.Invoke();
             PulseAll();
             _lastBeatIndex++;
+            _offEmittedForThisBeat = false;
         }
 
-        // 2) 콜백에서 쌓인 반박 처리
+        // 2) 콜백에서 쌓인 반박 예약
         int halfCount = System.Threading.Interlocked.Exchange(ref _pendingHalfBeats, 0);
         for (int i = 0; i < halfCount; i++)
             StartCoroutine(Co_FireOffBeatHalfStep());
 
-        // 3) === 폴백 방출 ===
-        // 이 프레임에 콜백 기반 OnBeat/OffBeat 예약이 전혀 없으면,
-        // 타임라인(ms)로 직접 On/OffBeat를 방출해준다.
+        // 3) FMOD가 아직 비트를 안 줬을 때만 “진짜로 필요할 때” 폴백
         if (onCount == 0 && halfCount == 0)
         {
-            // 현재 시간(ms) 기준으로 박자 인덱스 계산
-            int t = GetTimelineMs();
+            int tMs = GetTimelineMs();
+            if (tMs <= 0) return;                 // 폴백 암 기간엔 그냥 대기
             if (intervalMs <= 0) return;
 
-            int beatIndex = Mathf.FloorToInt(t / (float)intervalMs);
+            int beatIndex = Mathf.FloorToInt(tMs / (float)intervalMs);
 
-            // OnBeat 경계 통과
             if (beatIndex != _lastBeatIndex)
             {
                 _lastBeatIndex = beatIndex;
@@ -262,9 +284,8 @@ public class BeatManager : MonoBehaviour
                 PulseAll();
             }
 
-            // 반 박자 시점에서 OffBeat
             int halfPointMs = (_lastBeatIndex * intervalMs) + (intervalMs / 2);
-            if (!_offEmittedForThisBeat && t >= halfPointMs)
+            if (!_offEmittedForThisBeat && tMs >= halfPointMs)
             {
                 _offEmittedForThisBeat = true;
                 OffBeat?.Invoke();
@@ -272,10 +293,8 @@ public class BeatManager : MonoBehaviour
         }
     }
 
-
     void PulseAll()
     {
-        // null 들어있을 수 있으니 한번 정리
         for (int i = pulseTargets.Count - 1; i >= 0; i--)
         {
             var p = pulseTargets[i];
@@ -284,26 +303,41 @@ public class BeatManager : MonoBehaviour
         }
     }
 
-    public void SetBeatEmissionPaused(bool paused)
-    {
-        _suppressBeats = paused;
-    }
+    public void SetBeatEmissionPaused(bool paused) => _suppressBeats = paused;
 
     int GetTimelineMs()
     {
-        if (!_useFallbackTime && musicInstance.isValid())
+        // 1) FMOD 타임라인 우선
+        if (musicInstance.isValid())
         {
             musicInstance.getTimelinePosition(out int ms);
-            if (ms > 0) return ms;
+            if (ms > 0)
+            {
+                _useFallbackTime = false;
+                return ms;
+            }
+        }
+
+        // 2) 아직 FMOD에서 0만 나오고, 콜백도 안 왔고, 암 시간 미경과 → 폴백 금지
+        if (!_sawAnyFmodBeat && Time.unscaledTime < _fallbackArmAt)
+            return 0;
+
+        // 3) 진짜로 타임라인을 못 받는 환경에서만 폴백
+        if (!_useFallbackTime)
+        {
+            _useFallbackTime = true;
+            _startUnscaledTime = Time.unscaledTime;
         }
         return Mathf.RoundToInt((Time.unscaledTime - _startUnscaledTime) * 1000f);
     }
+
     int GetJudgeMs()
     {
         int t = GetTimelineMs();
-        if (applyVisualOffsetToJudge) t += visualOffsetMs;   // 시각과 판정 기준 일치
+        if (applyVisualOffsetToJudge) t += visualOffsetMs;
         return t;
     }
+
     static bool IsInZone(int t, List<JudgeZone> zones)
     {
         foreach (var z in zones)
@@ -314,10 +348,6 @@ public class BeatManager : MonoBehaviour
         return false;
     }
 
-    // 옵션: 화면 보정용 (시각 이펙트를 조금 당기거나 늦추고 싶을 때)
-    [SerializeField] private int visualOffsetMs = 0;
-
-    // TIMELINE_BEAT 콜백 → OnBeat 예약 및 tempo 갱신
     [AOT.MonoPInvokeCallback(typeof(EVENT_CALLBACK))]
     static FMOD.RESULT TimelineBeatCallback(EVENT_CALLBACK_TYPE type, IntPtr inst, IntPtr param)
     {
@@ -325,34 +355,28 @@ public class BeatManager : MonoBehaviour
         {
             var props = Marshal.PtrToStructure<TimelineBeatProperties>(param);
 
-            // FMOD가 내려준 템포 저장
             Instance._lastTempoFromFmod = props.tempo;
             if (Instance.useFmodTempo) Instance._tempoDirty = true;
 
-            // 여기서 "정박" 1회 적재
             System.Threading.Interlocked.Increment(ref Instance._pendingOnBeats);
-
-            // 엇박은 반 박자 뒤에 예약
-            // (콜백 스레드 → 메인에서 소모)
             System.Threading.Interlocked.Increment(ref Instance._pendingHalfBeats);
+
+            Instance._sawAnyFmodBeat = true; // 실제 비트 수신 시작
         }
         return FMOD.RESULT.OK;
     }
-    // 반 박자 뒤 OffBeat (타임스케일 무시)
+
     IEnumerator Co_FireOffBeatHalfStep()
     {
-        // 일시정지 중이면 먼저 대기
         while (_suppressBeats) yield return null;
 
-        float stepIntervalSec = intervalMs / 1000f;
-        float half = stepIntervalSec * 0.5f;
-        float visual = visualOffsetMs / 1000f;
-        float wait = Mathf.Max(0f, half + visual);
+        float stepIntervalSec = Mathf.Max(1, intervalMs) / 1000f;
+        float wait = Mathf.Max(0f, (stepIntervalSec * 0.5f) + (visualOffsetMs / 1000f));
 
         float t = 0f;
         while (t < wait)
         {
-            if (_suppressBeats) yield break; // 도중에 다시 일시정지되면 중단
+            if (_suppressBeats) yield break;
             t += Time.unscaledDeltaTime;
             yield return null;
         }
@@ -364,10 +388,11 @@ public class BeatManager : MonoBehaviour
         if (musicInstance.isValid())
         {
             musicInstance.setCallback(null);
-            musicInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+            musicInstance.stop(STOP_MODE.IMMEDIATE);
             musicInstance.release();
         }
     }
+
     public void RegisterPulseTarget(PulseToBeat p)
     {
         if (p == null) return;
@@ -382,10 +407,11 @@ public class BeatManager : MonoBehaviour
     // 외부 판정용
     public bool IsOnBeatNow() => IsInZone(GetJudgeMs(), onBeatZones);
     public bool IsOffBeatNow() => IsInZone(GetJudgeMs(), offBeatZones);
+
     public float GetEffectiveBpm()
     {
         float basis = (useFmodTempo && _lastTempoFromFmod > 0f) ? _lastTempoFromFmod : bpm;
-        return basis * currentSpeed;  // 피치/속도 반영
+        return basis * currentSpeed;
     }
 
     public float GetBeatDurationSec()
@@ -393,20 +419,19 @@ public class BeatManager : MonoBehaviour
         float bpmEff = GetEffectiveBpm();
         return 60f / Mathf.Max(1e-4f, bpmEff);
     }
-    // BeatManager.cs 내부
+
     public void SetMusicPaused(bool paused)
     {
-        if (musicInstance.isValid())
-            musicInstance.setPaused(paused);
-        _suppressBeats = paused; // 음악 정지 시 비트 방출도 잠금
+        if (musicInstance.isValid()) musicInstance.setPaused(paused);
+        _suppressBeats = paused;
     }
 
     public bool IsMusicValid() => musicInstance.isValid();
+
     public void SetMainVolume(float v)
     {
         _mainVolume = Mathf.Clamp01(v);
-        if (musicInstance.isValid())
-            musicInstance.setVolume(_mainVolume);
-        PlayerPrefs.SetFloat("main_volume", _mainVolume); // (선택) 저장
+        if (musicInstance.isValid()) musicInstance.setVolume(_mainVolume);
+        PlayerPrefs.SetFloat("main_volume", _mainVolume);
     }
 }
