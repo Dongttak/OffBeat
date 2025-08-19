@@ -310,25 +310,70 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   laserTimeline:
-  - time: 0
-    lane: 1
-    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
-  - time: 3
+  - beattoSpawn: 5
     lane: 2
     laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
-  - time: 6
+  - beattoSpawn: 6
     lane: 0
     laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
-  - time: 9
+  - beattoSpawn: 7
     lane: 1
     laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
-  - time: 12
+  - beattoSpawn: 8
     lane: 2
     laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
-  - time: 15
+  - beattoSpawn: 9
     lane: 1
     laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
-  initTime: 0
+  - beattoSpawn: 10
+    lane: 2
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 11
+    lane: 1
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 12
+    lane: 2
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 13
+    lane: 1
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 14
+    lane: 2
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 15
+    lane: 1
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 16
+    lane: 2
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 17
+    lane: 1
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 18
+    lane: 2
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 19
+    lane: 1
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 20
+    lane: 2
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 21
+    lane: 1
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 22
+    lane: 2
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 23
+    lane: 1
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 24
+    lane: 2
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  - beattoSpawn: 25
+    lane: 1
+    laserPrefab: {fileID: 5927982418121272055, guid: 6098b8380cff93444972f664169066cd, type: 3}
+  beatCnt: 0
   laneTransform:
   - {fileID: 1063100477}
   - {fileID: 1856156619}
@@ -918,7 +963,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee8311c3e1d5d1a4e8f549c9d22f570f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  counterUI: {fileID: 0}
+  mgr: {fileID: 0}
+  hintKey: 104
+  openKey: 106
 --- !u!4 &897990574
 Transform:
   m_ObjectHideFlags: 0
@@ -1190,17 +1237,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6ec1936feb97814b8b3100f98d2ca5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bpm: 120
-  stepsPerBeat: 1
-  hitRangePercentage: 0.25
-  musicEventPath:
+  musicEvent:
     Guid:
-      Data1: -457861438
-      Data2: 1080772104
-      Data3: -1958469233
-      Data4: 1433621641
-    Path: event:/Music_oneTempo
+      Data1: 469433172
+      Data2: 1254793221
+      Data3: 1539302279
+      Data4: -1211787849
+    Path: event:/Wantyourbody
+  currentSpeed: 1
+  bpm: 153
+  stepsPerBeat: 1
+  hitWindowPercent: 0.25
+  useFmodTempo: 0
+  applyVisualOffsetToJudge: 1
   pulseTargets: []
+  visualOffsetMs: 0
 --- !u!4 &1096053159
 Transform:
   m_ObjectHideFlags: 0
