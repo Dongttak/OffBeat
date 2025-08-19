@@ -7,6 +7,7 @@ public class UIChanger : MonoBehaviour
 {
     public Image fadeOutImage;
     public Image fadeInImage;
+    public float delay = 2f;
 
     private void Start()
     {
@@ -60,7 +61,7 @@ public class UIChanger : MonoBehaviour
     {
         TutorialGameManager.LockEsc(); // ✨ 페이드 동안 ESC 완전 차단
         fadeOutImage.gameObject.SetActive(true);
-        fadeOutImage.DOFade(1f, 3f)
+        fadeOutImage.DOFade(1f, delay)
             .SetEase(Ease.Linear)
             .SetUpdate(true)
             .OnComplete(() =>
@@ -77,7 +78,7 @@ public class UIChanger : MonoBehaviour
         {
             if (fadeInImage == null) return;
             GameManager.LockEsc(); // ✨ 페이드 동안 ESC 완전 차단
-            fadeInImage.DOFade(0f, 3f)
+            fadeInImage.DOFade(0f, delay)
                 .SetEase(Ease.Linear)
                 .OnComplete(() =>
                 {
