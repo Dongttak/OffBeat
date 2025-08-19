@@ -50,7 +50,7 @@ public class PatternCsvLoader : MonoBehaviour
 
             var step = new PatternTimeline.FixedStep
             {
-                stepIndex = stepIndex-6,
+                stepIndex = stepIndex - 6,
                 when = when,
                 lane = lane
             };
