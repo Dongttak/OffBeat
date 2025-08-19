@@ -30,6 +30,8 @@ public class PlayerInput : MonoBehaviour
     [Header("Optional test VFX")]
     [SerializeField] private CounterVFX counterVFX;
 
+    [Header("Counter Buffering")]
+    [SerializeField] private bool bufferCounter = false; // 기본 false: 카운터 버퍼링 안 함
     private int posIndex = 1;
 
     // 창 상태
@@ -68,35 +70,65 @@ public class PlayerInput : MonoBehaviour
 
     void Update()
     {
-        // 1) 언제든지 입력을 버퍼에 저장 (창이 닫혀있어도 저장)
-        if (Input.GetKeyDown(KeyCode.A)) bufLeft.Set();
-        if (Input.GetKeyDown(KeyCode.D)) bufRight.Set();
-        if (Input.GetKeyDown(attackKey)) bufAttack.Set();
-        if (Input.GetKeyDown(counterKey)) bufCounter.Set();
+        var bm = BeatManager.Instance;
+        bool onNow = bm != null && bm.IsOnBeatNow();   // 정박 판정(윈도우 폭은 BeatManager가 관리)
+
+        // ── 이동/공격: 입력 순간 정박이면 즉시 실행, 아니면 버퍼 ──
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            if (onNow && posIndex > 0) { MoveTo(posIndex - 1); onConsumed = true; }
+            else { bufLeft.Set(); }
+        }
+
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            if (onNow && posIndex < 2) { MoveTo(posIndex + 1); onConsumed = true; }
+            else { bufRight.Set(); }
+        }
+
+        if (Input.GetKeyDown(attackKey))
+        {
+            if (onNow) { DoAttack(); onConsumed = true; }
+            else { bufAttack.Set(); }
+        }
+
+        // ── 카운터: 버퍼 off면 창 열렸을 때만, on이면 기존 로직 ──
+        if (Input.GetKeyDown(counterKey))
+        {
+            if (bufferCounter)
+            {
+                bufCounter.Set();
+            }
+            else
+            {
+                // 창 열려있을 때만 즉시
+                if (offOpen && !offConsumed)
+                {
+                    DoCounter();
+                    offConsumed = true;
+                }
+            }
+        }
 
         // (옵션) 테스트 VFX
         if (Input.GetKeyDown(KeyCode.T) && counterVFX != null)
             counterVFX.PlayVFX();
 
-        // 2) 창 시간 관리(슬로모션 영향 없음)
+        // 창 시간 관리(언스케일드)
         if (onOpen && Time.unscaledTime > onCloseAt) onOpen = false;
         if (offOpen && Time.unscaledTime > offCloseAt) offOpen = false;
 
-        // 3) 정박 창 열려 있으면 즉시 처리 (각 창당 1회만)
+        // 창 열려 있을 때 즉시 소비(백업 플랜)
         if (onOpen && !onConsumed)
         {
             if (TryConsumeOnBeatImmediate()) onConsumed = true;
         }
-
-        // 4) 엇박 창 열려 있으면 즉시 처리
         if (offOpen && !offConsumed)
         {
             if (TryConsumeOffBeatImmediate()) offConsumed = true;
         }
-
-        // 5) 창이 닫힌 상태에서도 버퍼는 유지됨.
-        //    다음 OnBeat/OffBeat가 열릴 때 OpenOn/OpenOff 내부에서 자동으로 소진됨.
     }
+
 
     // ── 창 오픈 시점 처리 ─────────────────────────────────
     void OpenOn()
@@ -113,26 +145,28 @@ public class PlayerInput : MonoBehaviour
         offOpen = true; offConsumed = false;
         offCloseAt = Time.unscaledTime + inputWindow;
 
-        if (!offConsumed && TryConsumeOffBeatBuffered()) offConsumed = true;
+        if (!offConsumed && bufferCounter && TryConsumeOffBeatBuffered())
+            offConsumed = true;
     }
+
 
     // ── 즉시 소비(창 열려 있을 때, 키다운 우선) ─────────────────
     bool TryConsumeOnBeatImmediate()
     {
-        // 키가 지금 막 눌렸다면 최우선
-        if (Input.GetKeyDown(KeyCode.A) && posIndex > 0) { MoveTo(posIndex - 1); return true; }
-        if (Input.GetKeyDown(KeyCode.D) && posIndex < 2) { MoveTo(posIndex + 1); return true; }
-        if (Input.GetKeyDown(attackKey)) { DoAttack(); return true; }
-
-        // 바로 눌린 건 없지만 버퍼가 살아있다면 즉시 소비
+        // 즉시 눌린 건 위에서 처리했으니, 여기선 버퍼만 소진
         return TryConsumeOnBeatBuffered();
     }
 
+
     bool TryConsumeOffBeatImmediate()
     {
+        // 창 열려있는 동안 눌렸다면 즉시 처리
         if (Input.GetKeyDown(counterKey)) { DoCounter(); return true; }
-        return TryConsumeOffBeatBuffered();
+
+        // 버퍼를 쓰는 경우에만 버퍼 소비 시도
+        return bufferCounter && TryConsumeOffBeatBuffered();
     }
+
 
     // ── 버퍼 소비(창이 막 열렸을 때나, 즉시 입력이 없을 때) ──────
     bool TryConsumeOnBeatBuffered()
@@ -149,6 +183,7 @@ public class PlayerInput : MonoBehaviour
 
     bool TryConsumeOffBeatBuffered()
     {
+        if (!bufferCounter) return false; // 버퍼 꺼져 있으면 소비 안 함
         if (bufCounter.IsValid(bufferHold))
         {
             DoCounter();
