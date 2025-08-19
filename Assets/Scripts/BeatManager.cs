@@ -65,6 +65,8 @@ public class BeatManager : MonoBehaviour
     public static event Action OffBeat;
 
     private bool _suppressBeats = false;
+    private volatile bool _tempoDirty = false;
+
 
     public bool IsInitialized => isInitialized;
     // 콜백에서 적재할 플래그(메인스레드에서 꺼냄)
@@ -201,6 +203,17 @@ public class BeatManager : MonoBehaviour
 
     void Update()
     {
+        if (_tempoDirty)
+        {
+            RecalculateTiming();
+            if (musicDesc.isValid())
+            {
+                musicDesc.getLength(out int songLenMs);
+                if (songLenMs <= 0) songLenMs = 180_000;
+                BuildJudgeZones(songLenMs);
+            }
+            _tempoDirty = false;
+        }
         if (!isInitialized) return;
 
         // === 일시정지면 비트/펄스 완전 차단 ===
@@ -311,7 +324,7 @@ public class BeatManager : MonoBehaviour
 
             // FMOD가 내려준 템포 저장
             Instance._lastTempoFromFmod = props.tempo;
-            if (Instance.useFmodTempo) Instance.RecalculateTiming();
+            if (Instance.useFmodTempo) Instance._tempoDirty = true;
 
             // 여기서 "정박" 1회 적재
             System.Threading.Interlocked.Increment(ref Instance._pendingOnBeats);
