@@ -1502,6 +1502,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5842831149087366638, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
   m_PrefabInstance: {fileID: 818245918}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &818245920 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3216562050575402707, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
+  m_PrefabInstance: {fileID: 818245918}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &818245921 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9014576061482590037, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
@@ -1519,7 +1530,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3d1e5b498224544ea3c67734b029ad5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainSlider: {fileID: 0}
+  bgmSlider: {fileID: 818245923}
+  sfxSlider: {fileID: 818245920}
+--- !u!114 &818245923 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3410041369563077183, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
+  m_PrefabInstance: {fileID: 818245918}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &872281467
 GameObject:
   m_ObjectHideFlags: 0
@@ -3002,6 +3025,9 @@ MonoBehaviour:
   fallbackBeatSeconds: 0.5
   syncPosIndexViaReflection: 1
   posIndexFieldName: posIndex
+  useCarOccupancyLock: 1
+  playerHalfLenZ: 0.8
+  carSoftLockOnBeatOnly: 1
 --- !u!114 &1763526913
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3831,6 +3857,8 @@ MonoBehaviour:
   - {fileID: 359066315}
   - {fileID: 1323350758}
   playerInput: {fileID: 6692213568136283685}
+  blockFramesOnReject: 3
+  blockCooldown: 0.08
 --- !u!81 &6692213568136283692
 AudioListener:
   m_ObjectHideFlags: 0

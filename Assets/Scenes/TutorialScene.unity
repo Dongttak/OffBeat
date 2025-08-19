@@ -4700,6 +4700,7 @@ MonoBehaviour:
   stepsPerBeat: 1
   hitWindowPercent: 0.25
   useFmodTempo: 1
+  delayTime: 2
   applyVisualOffsetToJudge: 1
   pulseTargets: []
   visualOffsetMs: 0
@@ -4951,19 +4952,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e173c5125811ee949a601cc57cb16bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steps:
-  - stepIndex: 0
-    lane: 0
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
-  - stepIndex: 8
-    lane: 2
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
   laneAnchors:
   - {fileID: 368063840}
   - {fileID: 1991763425}
   - {fileID: 756810233}
+  spawnParent: {fileID: 0}
+  counterManager: {fileID: 0}
+  beatsPerMeasure: 4
+  steps:
+  - when: 0
+    stepIndex: 0
+    measureBeat: 
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
+    lane: 0
+    localOffset: {x: 0, y: 0, z: 4}
+    spawns: []
+    toggles: []
+    animators: []
+    animatorTrigger: 
+    counters: []
+    events: []
+  - when: 0
+    stepIndex: 8
+    measureBeat: 
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
+    lane: 2
+    localOffset: {x: 0, y: 0, z: 4}
+    spawns: []
+    toggles: []
+    animators: []
+    animatorTrigger: 
+    counters: []
+    events: []
 --- !u!4 &1163535286
 Transform:
   m_ObjectHideFlags: 0
@@ -6086,6 +6106,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5842831149087366638, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
   m_PrefabInstance: {fileID: 1413961635}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1413961637 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3216562050575402707, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
+  m_PrefabInstance: {fileID: 1413961635}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1413961638 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3410041369563077183, guid: b16c252c323ea1d45ba1613977f66822, type: 3}
@@ -6114,7 +6145,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3d1e5b498224544ea3c67734b029ad5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainSlider: {fileID: 1413961638}
+  bgmSlider: {fileID: 1413961638}
+  sfxSlider: {fileID: 1413961637}
 --- !u!1 &1419420244
 GameObject:
   m_ObjectHideFlags: 0
@@ -6261,6 +6293,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   forceCenterWhenLocked: 1
+  enforceWhileLocked: 1
   playerTransform: {fileID: 1792919189}
   laneAnchors:
   - {fileID: 368063840}
@@ -6271,6 +6304,9 @@ MonoBehaviour:
   fallbackBeatSeconds: 0.5
   syncPosIndexViaReflection: 1
   posIndexFieldName: posIndex
+  useCarOccupancyLock: 1
+  playerHalfLenZ: 0.8
+  carSoftLockOnBeatOnly: 1
 --- !u!114 &1423272720
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6341,6 +6377,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeOutImage: {fileID: 2089755809}
   fadeInImage: {fileID: 0}
+  delay: 2
 --- !u!114 &1423272722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7524,6 +7561,8 @@ MonoBehaviour:
   - {fileID: 1991763425}
   - {fileID: 756810233}
   playerInput: {fileID: 1792919179}
+  blockFramesOnReject: 3
+  blockCooldown: 0.08
 --- !u!4 &1792919189 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8492195247394301715, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
