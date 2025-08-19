@@ -948,15 +948,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3667211753972221885, guid: 0830086465bbffd4ab64ee6fc8c82d74, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.1
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3667211753972221885, guid: 0830086465bbffd4ab64ee6fc8c82d74, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.1
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3667211753972221885, guid: 0830086465bbffd4ab64ee6fc8c82d74, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.1
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3667211753972221885, guid: 0830086465bbffd4ab64ee6fc8c82d74, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1029,19 +1029,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stepDistance: 3
-  stepTime: 0.18
-  leadDelay: 0
+  leadBeats: 0
   stepsMax: 0
+  autoStartOnEnable: 1
+  usePooling: 0
   destroyAtEnd: 1
-  activeOnStart: 0
-  bossAnimator: {fileID: 763241228}
-  poseTrigger: Pose_2
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  hitHalfExtents: {x: 0.7, y: 1, z: 0.7}
-  hitOffset: {x: 0, y: 0.5, z: 0}
-  hitCooldown: 0.1
+  useWorldZForward: 0
+  invertDirection: 0
 --- !u!1 &509578926
 GameObject:
   m_ObjectHideFlags: 0
@@ -1070,7 +1064,7 @@ RectTransform:
   m_GameObject: {fileID: 509578926}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 96957246}
@@ -1848,6 +1842,7 @@ MonoBehaviour:
   stepsPerBeat: 1
   hitWindowPercent: 0.25
   useFmodTempo: 1
+  delayTime: 2
   applyVisualOffsetToJudge: 1
   pulseTargets: []
   visualOffsetMs: 0
@@ -2287,6 +2282,87 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!21 &1306064419
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SingleLine-LightSaber(Clone)
+  m_Shader: {fileID: 4800000, guid: 2d9a4ca4b2730b64e8aade7030f8caeb, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 5
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BumpScale: 1
+    - _Cutoff: 0.5
+    - _DetailNormalMapScale: 1
+    - _DstBlend: 0
+    - _Glossiness: 0.5
+    - _LightSaberFactor: 0.8
+    - _LineScale: 1
+    - _LineWidth: 2
+    - _Metallic: 0
+    - _Mode: 0
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _SrcBlend: 1
+    - _UVSec: 0
+    - _UvBasedLightSaberFactor: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _Color: {r: 1, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  m_BuildTextureStacks: []
 --- !u!1 &1323350757
 GameObject:
   m_ObjectHideFlags: 0
@@ -2593,19 +2669,72 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e173c5125811ee949a601cc57cb16bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steps:
-  - stepIndex: 0
-    lane: 0
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
-  - stepIndex: 8
-    lane: 2
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
   laneAnchors:
   - {fileID: 1113761986}
   - {fileID: 359066315}
   - {fileID: 1323350758}
+  spawnParent: {fileID: 0}
+  counterManager: {fileID: 1113954334}
+  beatsPerMeasure: 4
+  steps:
+  - when: 0
+    stepIndex: 4
+    measureBeat: 
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
+    lane: 0
+    localOffset: {x: 0, y: 0, z: 4}
+    spawns: []
+    toggles: []
+    animators: []
+    animatorTrigger: 
+    counters: []
+    events: []
+  - when: 0
+    stepIndex: 8
+    measureBeat: 
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
+    lane: 2
+    localOffset: {x: 0, y: 0, z: 4}
+    spawns: []
+    toggles: []
+    animators: []
+    animatorTrigger: 
+    counters: []
+    events: []
+  - when: 0
+    stepIndex: 2
+    measureBeat: 
+    prefab: {fileID: 0}
+    lane: 1
+    localOffset: {x: 0, y: 0, z: 4}
+    spawns:
+    - prefab: {fileID: 487698934}
+      lane: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0, z: 16}
+      autoDestroyAfter: 5
+      usePool: 0
+    toggles: []
+    animators:
+    - {fileID: 0}
+    animatorTrigger: 
+    counters: []
+    events: []
+  - when: 1
+    stepIndex: 14
+    measureBeat: 
+    prefab: {fileID: 0}
+    lane: 0
+    localOffset: {x: 0, y: 0, z: 4}
+    spawns: []
+    toggles: []
+    animators: []
+    animatorTrigger: 
+    counters:
+    - openAsHint: 1
+      leadSeconds: 0
+      windowSeconds: 0
+    events: []
 --- !u!1 &1600623785
 GameObject:
   m_ObjectHideFlags: 0
@@ -2776,7 +2905,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 100, y: 300}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1611907986
 MonoBehaviour:
@@ -2931,6 +3060,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeOutImage: {fileID: 0}
   fadeInImage: {fileID: 113475723}
+  delay: 2
 --- !u!114 &1763526912
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3342,11 +3472,11 @@ MonoBehaviour:
   playOnWindowOpen: 0
   sfxOpen:
     Guid:
-      Data1: -515302466
-      Data2: 1172417928
-      Data3: 1720512916
-      Data4: -2107267269
-    Path: event:/ggst-counter
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   sfxSuccess:
     Guid:
       Data1: -515302466
@@ -3511,6 +3641,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _firstSpawnObjects:
+  - {fileID: 2977621994903979701, guid: ef34b9490acddbd4694c02ae59cd1c85, type: 3}
   - {fileID: 2977621994903979701, guid: ef34b9490acddbd4694c02ae59cd1c85, type: 3}
   - {fileID: 2977621994903979701, guid: ef34b9490acddbd4694c02ae59cd1c85, type: 3}
   - {fileID: 2977621994903979701, guid: ef34b9490acddbd4694c02ae59cd1c85, type: 3}
