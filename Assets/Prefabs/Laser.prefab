@@ -252,15 +252,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddd561db07f1b3941b1d123eb3196f65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beattoLaser: 0
-  warningbeat: 2
-  timetoLaser: 0
-  warningtime: 0
-  bpm: 153
-  beattosec: 0
-  img: {fileID: 9090809479356061269}
-  audio: {fileID: -3522413647997483662}
+  warningBeats: 2
+  fallbackBpm: 153
+  gauge: {fileID: 9090809479356061269}
+  sfx: {fileID: -3522413647997483662}
   laserEffect: {fileID: 4972329377520646064}
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  rayDistance: 30
 --- !u!82 &-3522413647997483662
 AudioSource:
   m_ObjectHideFlags: 0

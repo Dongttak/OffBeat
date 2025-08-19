@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using Unity.VisualScripting;
 
 [AddComponentMenu("Offbeat/Pattern2/LaserObject")]
 public class LaserObject : MonoBehaviour
@@ -60,7 +61,11 @@ public class LaserObject : MonoBehaviour
         if (!gauge) return;
         gauge.fillAmount = Mathf.Clamp01((float)beatsRemaining / Mathf.Max(1, warningBeats));
     }
-
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position + Vector3.up, Vector3.back * 30);
+    }
     IEnumerator LaserAttack()
     {
         if (laserEffect) laserEffect.SetActive(true);
@@ -68,7 +73,10 @@ public class LaserObject : MonoBehaviour
 
         // 로컬 forward 기준(보스가 회전해도 맞게 나감)
         Vector3 origin = transform.position + Vector3.up;
-        Vector3 dir = transform.forward;
+        Vector3 dir = Vector3.back;
+
+        yield return new WaitForSeconds(0.1f);
+        if (laserEffect) laserEffect.SetActive(false);
 
         if (Physics.Raycast(origin, dir, out RaycastHit hit, rayDistance, playerMask))
         {
@@ -78,9 +86,6 @@ public class LaserObject : MonoBehaviour
                 Debug.Log("Player Hit by Laser!");
             }
         }
-
-        yield return new WaitForSeconds(0.1f);
-        if (laserEffect) laserEffect.SetActive(false);
 
         if (sfx) yield return new WaitUntil(() => !sfx.isPlaying);
 
