@@ -152,6 +152,7 @@ public class BeatManager : MonoBehaviour
         musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
 
         // 재생
+        yield return new WaitForSeconds(2.0f);
         musicInstance.start();
         musicInstance.setVolume(_mainVolume);
 
