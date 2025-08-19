@@ -78,13 +78,13 @@ public class PlayerInput : MonoBehaviour
         // ── 이동/공격: 입력 순간 정박이면 즉시 실행, 아니면 버퍼 ──
         if (Input.GetKeyDown(KeyCode.A))
         {
-            if (onNow && posIndex > 0) { MoveTo(posIndex - 1); onConsumed = true; }
+            if (onNow && posIndex > 0) { TryMoveToLane(posIndex - 1); onConsumed = true; }
             else { bufLeft.Set(); }
         }
 
         if (Input.GetKeyDown(KeyCode.D))
         {
-            if (onNow && posIndex < 2) { MoveTo(posIndex + 1); onConsumed = true; }
+            if (onNow && posIndex < 2) { TryMoveToLane(posIndex + 1); onConsumed = true; }
             else { bufRight.Set(); }
         }
 
@@ -175,8 +175,8 @@ public class PlayerInput : MonoBehaviour
     {
         bool consumed = false;
         // 이동 입력 우선 → 그 다음 공격 (우선순위는 취향대로 바꿔도 됨)
-        if (!consumed && bufLeft.IsValid(bufferHold) && posIndex > 0) { MoveTo(posIndex - 1); bufLeft.Clear(); consumed = true; }
-        if (!consumed && bufRight.IsValid(bufferHold) && posIndex < 2) { MoveTo(posIndex + 1); bufRight.Clear(); consumed = true; }
+        if (!consumed && bufLeft.IsValid(bufferHold) && posIndex > 0) { TryMoveToLane(posIndex - 1); bufLeft.Clear(); consumed = true; }
+        if (!consumed && bufRight.IsValid(bufferHold) && posIndex < 2) { TryMoveToLane(posIndex + 1); bufRight.Clear(); consumed = true; }
         if (!consumed && bufAttack.IsValid(bufferHold)) { DoAttack(); bufAttack.Clear(); consumed = true; }
 
         // 소비 못 했어도 버퍼는 유지 → 다음 비트에서 또 시도
@@ -218,8 +218,21 @@ public class PlayerInput : MonoBehaviour
     {
         DoAttack(); // 내부에서 AttackEvent?.Invoke() + attack.Attack() 처리
     }
-    public void TriggerCounterFromTutorial() 
-    { 
-        DoCounter(); 
+    public void TriggerCounterFromTutorial()
+    {
+        DoCounter();
+    }
+    public bool TryMoveToLane(int target, bool force = false)
+    {
+        target = Mathf.Clamp(target, 0, 2);
+        var lm = LaneLockManager.Instance;
+        if (!force && lm != null)
+        {
+            // 하드락(봉인) + 소프트락(차 점유) 진입 금지
+            if (lm.IsLocked(target) || lm.IsSoftLockedByCar(target))
+                return false;
+        }
+        MoveTo(target);
+        return true;
     }
 }

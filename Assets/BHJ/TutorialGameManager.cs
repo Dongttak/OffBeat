@@ -272,7 +272,6 @@ public class TutorialGameManager : MonoBehaviour
 
         _successCount++;
         OnSpecialSuccess?.Invoke();
-        ShowFeedback("COUNTER!", Color.cyan);
 
         if (progressMode == ProgressMode.ByCount)
         {

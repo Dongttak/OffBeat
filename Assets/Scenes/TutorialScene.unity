@@ -4695,6 +4695,10 @@ MonoBehaviour:
       Data3: -1649888094
       Data4: -820447359
     Path: event:/120bpm
+  preloadSampleData: 1
+  waitForSampleDataBeforeStart: 1
+  sampleLoadTimeout: 1
+  fallbackArmSeconds: 1
   currentSpeed: 1
   bpm: 120
   stepsPerBeat: 1
@@ -4959,7 +4963,31 @@ MonoBehaviour:
   spawnParent: {fileID: 0}
   counterManager: {fileID: 0}
   beatsPerMeasure: 4
-  steps: []
+  steps:
+  - when: 0
+    stepIndex: 0
+    measureBeat: 
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
+    lane: 0
+    localOffset: {x: 0, y: 0.5, z: 5}
+    spawns: []
+    toggles: []
+    animators: []
+    animatorTrigger: 
+    counters: []
+    events: []
+  - when: 0
+    stepIndex: 8
+    measureBeat: 
+    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
+    lane: 2
+    localOffset: {x: 0, y: 0.5, z: 5}
+    spawns: []
+    toggles: []
+    animators: []
+    animatorTrigger: 
+    counters: []
+    events: []
 --- !u!4 &1163535286
 Transform:
   m_ObjectHideFlags: 0
@@ -7483,9 +7511,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7463405499644600633, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1792919184}
-    - targetCorrespondingSourceObject: {fileID: 7463405499644600633, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1792919185}
   m_SourcePrefab: {fileID: 100100000, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
 --- !u!114 &1792919179 stripped
 MonoBehaviour:
@@ -7520,25 +7545,6 @@ MonoBehaviour:
   hittableMask:
     serializedVersion: 2
     m_Bits: 192
---- !u!114 &1792919185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 571618528}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6dde87d2485c9a14e89b9fe9b555d597, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lanePositions:
-  - {fileID: 368063840}
-  - {fileID: 1991763425}
-  - {fileID: 756810233}
-  playerInput: {fileID: 1792919179}
-  blockFramesOnReject: 3
-  blockCooldown: 0.08
 --- !u!4 &1792919189 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8492195247394301715, guid: 192e19340c609c04cbc81335dcb79100, type: 3}
