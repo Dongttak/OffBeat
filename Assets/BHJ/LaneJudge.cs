@@ -5,47 +5,68 @@ public class LaneJudge : MonoBehaviour
     public Transform[] lanePositions; // 0,1,2
     public PlayerInput playerInput;
 
-    private int GetNearestLaneIndex(Vector3 pos)
+    [Header("Block Gate")]
+    [Tooltip("막혔을 때 PlayerInput을 비활성화할 프레임 수")]
+    public int blockFramesOnReject = 3;
+    [Tooltip("막혔을 때 다음 입력을 받기까지의 최소 시간(초)")]
+    public float blockCooldown = 0.08f;
+
+    int framesBlocked = 0;
+    float nextInputTime = 0f;
+
+    int GetNearestLaneIndex(Vector3 pos)
     {
-        int best = 0;
-        float bestDist = Mathf.Infinity;
+        int best = 0; float bestDist = Mathf.Infinity;
         for (int i = 0; i < lanePositions.Length; i++)
         {
+            if (!lanePositions[i]) continue;
             float d = (pos - lanePositions[i].position).sqrMagnitude;
             if (d < bestDist) { bestDist = d; best = i; }
         }
         return best;
     }
 
-    private void Update()
+    void Update()
     {
         if (!playerInput || lanePositions == null || lanePositions.Length < 3) return;
 
-        // 의도한 목표 레인 계산
+        // 게이트 유지
+        if (framesBlocked > 0)
+        {
+            framesBlocked--;
+            if (playerInput.enabled) playerInput.enabled = false;
+            return;
+        }
+        else
+        {
+            if (!playerInput.enabled) playerInput.enabled = true;
+        }
+
+        if (Time.time < nextInputTime) return; // 쿨다운
+
+        // 입력 읽기
         int cur = GetNearestLaneIndex(transform.position);
         int target = cur;
-
         bool left = Input.GetKeyDown(KeyCode.A);
         bool right = Input.GetKeyDown(KeyCode.D);
 
         if (left) target = Mathf.Max(0, cur - 1);
         else if (right) target = Mathf.Min(2, cur + 1);
-        else return; // 이동 입력이 없으면 아무 것도 안 함
+        else return;
 
-        // 타겟 레인이 봉인이면 해당 프레임에 PlayerInput을 비활성화하여 입력무시
-        if (LaneLockManager.Instance && LaneLockManager.Instance.IsLocked(target))
+        var lm = LaneLockManager.Instance;
+        bool blocked = lm != null && (lm.IsLocked(target) || lm.IsSoftLockedByCar(target));
+
+        if (blocked)
         {
-            Debug.Log($"Lane {target} is locked!");
-            // 이 프레임만 PlayerInput 비활성→활성
-            playerInput.enabled = false;
-            StartCoroutine(ReenableNextFrame());
+            // 입력 차단: 다프레임 + 쿨다운
+            framesBlocked = Mathf.Max(1, blockFramesOnReject);
+            nextInputTime = Time.time + Mathf.Max(0f, blockCooldown);
+            // 시각/사운드 피드백은 여기서
+            return;
         }
-    }
 
-    System.Collections.IEnumerator ReenableNextFrame()
-    {
-        yield return null; // 다음 프레임
-        if (playerInput) playerInput.enabled = true;
+        // 통과 → 실제 이동 호출 (프로젝트의 PlayerInput API에 맞게)
+        // 예시: playerInput.TryMoveToLane(target);
     }
 }
-// 현재 이동 코드(PlayerInput) 따로 있어서 리팩토링 요망.

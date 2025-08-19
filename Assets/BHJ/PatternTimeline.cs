@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -118,8 +119,6 @@ public class PatternTimeline : MonoBehaviour
         {
             SpawnAtLane(s.prefab, s.lane, s.localOffset, 0f);
         }
-
-        // 1) Spawns (여러 개)
         for (int i = 0; i < s.spawns.Count; i++)
         {
             var a = s.spawns[i];
@@ -134,14 +133,25 @@ public class PatternTimeline : MonoBehaviour
             Vector3 pos = (anchor ? anchor.position : Vector3.zero) + a.offset;
             Quaternion rot = anchor ? anchor.rotation : Quaternion.identity;
 
-            var go = Instantiate(a.prefab, pos, rot, spawnParent ? spawnParent : null);
-            if (a.autoDestroyAfter > 0f) Destroy(go, a.autoDestroyAfter);
+            // 풀 사용 여부에 따라 스폰
+            GameObject go = a.usePool
+                ? PoolManager.SpawnObject(a.prefab, pos, rot)
+                : Instantiate(a.prefab, pos, rot, spawnParent ? spawnParent : null);
 
-            // ✅ 패턴 훅: Pattern2가 있다면 laneIndex 세팅
+            // 자동 반환/삭제
+            if (a.autoDestroyAfter > 0f)
+            {
+                if (a.usePool) StartCoroutine(Co_ReturnAfter(go, a.autoDestroyAfter));
+                else Destroy(go, a.autoDestroyAfter);
+            }
+
+            // LaneBlocker 레인 주입(재등록 포함)
+            var lb = go.GetComponent<LaneBlocker>();
+            if (lb) lb.SetLane(laneToUse);
+
+            // (선택) Pattern2 호환
             var p2 = go.GetComponent<Pattern2>();
             if (p2) p2.laneIndex = laneToUse;
-
-            // (선택) CarPattern은 레인 개념 없이 앵커 위치로 배치되므로 추가 설정 불필요
         }
 
         // 2) Events
@@ -312,5 +322,10 @@ public class PatternTimeline : MonoBehaviour
 
         [Tooltip("즉시 오픈 시 창 지속시간(초). 0이면 CounterManager 기본값")]
         public float windowSeconds = 0f;
+    }
+    IEnumerator Co_ReturnAfter(GameObject go, float t)
+    {
+        yield return new WaitForSeconds(t);
+        if (go) PoolManager.ReturnObjectToPool(go);
     }
 }

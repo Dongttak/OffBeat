@@ -255,8 +255,15 @@ MonoBehaviour:
   warningBeats: 2
   fallbackBpm: 153
   gauge: {fileID: 9090809479356061269}
-  sfx: {fileID: -3522413647997483662}
   laserEffect: {fileID: 4972329377520646064}
+  fireSfxEvent:
+    Guid:
+      Data1: 2044679823
+      Data2: 1186841086
+      Data3: -878656887
+      Data4: 756412840
+    Path: event:/LaserSound
+  waitForSfxEnd: 0
   playerMask:
     serializedVersion: 2
     m_Bits: 4294967295

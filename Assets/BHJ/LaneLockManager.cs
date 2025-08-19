@@ -1,177 +1,132 @@
 using System;
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
+using UnityEngine;
 
 public class LaneLockManager : MonoBehaviour
 {
     [Header("Force-Center On Lock")]
-    [Tooltip("봉인된 레인에 플레이어가 서 있으면 중앙 레인으로 강제 이동")]
     public bool forceCenterWhenLocked = true;
-
-    [Tooltip("락이 유지되는 동안, 봉인된 레인 위에 서 있으면 매 프레임 중앙으로 보냄")]
     public bool enforceWhileLocked = true;
-
-    [Tooltip("강제 이동 대상 플레이어")]
     public Transform playerTransform;
-
-    [Tooltip("레인 앵커(0/1/2)")]
     public Transform[] laneAnchors = new Transform[3];
-
-    [Tooltip("중앙 레인 인덱스 (기본 1)")]
     [Range(0, 2)] public int centerLaneIndex = 1;
 
     [Header("I-Frames")]
-    [Tooltip("강제 이동 시 1비트 동안 무적 부여")]
     public bool grantIFramesForOneBeat = true;
-
-    [Tooltip("비트 길이(초). BeatState에 SecondsPerBeat가 있으면 자동 사용, 없으면 이 값을 사용")]
     public float fallbackBeatSeconds = 0.5f;
 
     [Header("PosIndex Sync (no edit to PlayerInput)")]
     public bool syncPosIndexViaReflection = true;
-    [Tooltip("PlayerInput 내부 필드명(현재 코드 기준)")]
     public string posIndexFieldName = "posIndex";
+
+    [Header("Dynamic Car Occupancy")]
+    public bool useCarOccupancyLock = true;
+    [Tooltip("플레이어 Z 반길이(겹침 여유)")]
+    public float playerHalfLenZ = 0.8f;
+
+    [Header("Car Soft-Lock Timing")]
+    [Tooltip("차 점유 소프트락을 '정박 순간'에만 적용")]
+    public bool carSoftLockOnBeatOnly = true;
+
     public static bool IsPlayerInvulnerable { get; private set; }
     public static LaneLockManager Instance { get; private set; }
 
     private float[] unlockTimes = new float[3] { 0, 0, 0 };
-    // 비트(스텝) 기반 락 남은 스텝
     private readonly Dictionary<int, int> _stepsRemain = new();
     private bool _listeningBeats = false;
+
     public event Action<int, bool, float> OnLaneLockChanged;
 
-    private void Awake()
+    void Awake()
     {
         if (Instance && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
-    void Update() // NEW
-    {
-        if (!enforceWhileLocked) return;
-        if (!forceCenterWhenLocked) return;
-        if (!playerTransform) return;
-        if (laneAnchors == null || laneAnchors.Length < 3) return;
 
-        // 현재 플레이어가 서 있는 레인 계산
+    void Update()
+    {
+        if (!enforceWhileLocked || !forceCenterWhenLocked) return;
+        if (!playerTransform || laneAnchors == null || laneAnchors.Length < 3) return;
+
         int cur = GetNearestLaneIndex(playerTransform.position);
         if (cur < 0 || cur >= laneAnchors.Length) return;
 
-        // 그 레인이 봉인 중이면 중앙으로 스냅
-        if (IsLocked(cur))
+        if (IsLocked(cur)) // ※ 소프트락(차 점유)은 여기서 밀지 않음
         {
             int dest = Mathf.Clamp(centerLaneIndex, 0, 2);
-
-            // 중앙 앵커 없으면 중단
             var center = laneAnchors[dest];
             if (!center) return;
 
-            // 이미 충분히 가까우면 스킵(소수 떨림 방지)
             const float eps = 0.01f;
-            if (Mathf.Abs(playerTransform.position.x - center.position.x) <= eps) return;
-
-            // 스냅 이동 (트윈 사용 안 함)
-            playerTransform.position = new Vector3(
-                center.position.x,
-                playerTransform.position.y,
-                playerTransform.position.z
-            );
-
-            // posIndex 동기화
-            if (syncPosIndexViaReflection) SetPlayerPosIndex(dest);
-
-            // 무적 1비트
-            if (grantIFramesForOneBeat)
+            if (Mathf.Abs(playerTransform.position.x - center.position.x) > eps)
             {
-                float beatSec = GetOneBeatSeconds();
-                StopCoroutineSafe(nameof(Co_IFrames));
-                StartCoroutine(Co_IFrames(beatSec));
+                playerTransform.position = new Vector3(center.position.x, playerTransform.position.y, playerTransform.position.z);
+                if (syncPosIndexViaReflection) SetPlayerPosIndex(dest);
+
+                if (grantIFramesForOneBeat)
+                {
+                    float beatSec = GetOneBeatSeconds();
+                    StopCoroutineSafe(nameof(Co_IFrames));
+                    StartCoroutine(Co_IFrames(beatSec));
+                }
             }
         }
     }
+
+    // ===== 공개 API =====
     public bool IsLocked(int lane)
     {
-        if (Time.time < unlockTimes[lane]) return true;         // 초 기반
-        if (_stepsRemain.TryGetValue(lane, out int steps) && steps > 0) return true; // 비트 기반
+        if (lane < 0 || lane > 2) return false;
+        if (Time.time < unlockTimes[lane]) return true;
+        if (_stepsRemain.TryGetValue(lane, out int steps) && steps > 0) return true;
         return false;
+    }
+
+    public bool IsSoftLockedByCar(int lane)
+    {
+        if (!useCarOccupancyLock) return false;
+        if (LaneBlockService.I == null || !playerTransform) return false;
+
+        // ★ 정박 순간에만 소프트락 적용
+        if (carSoftLockOnBeatOnly)
+        {
+            // BeatManager가 있다면 OnBeat 판정 창 안에서만 막기
+            if (BeatManager.Instance != null && !BeatManager.Instance.IsOnBeatNow())
+                return false; // 지금은 박자 창 아님 → 통과
+        }
+
+        // 차 점유 여부
+        return !LaneBlockService.I.IsLaneFree(lane, playerTransform.position.z, playerHalfLenZ);
     }
 
     public void LockLane(int lane, float duration)
     {
+        lane = Mathf.Clamp(lane, 0, 2);
         float until = Mathf.Max(unlockTimes[lane], Time.time + duration);
         unlockTimes[lane] = until;
         OnLaneLockChanged?.Invoke(lane, true, until - Time.time);
         TryForceCenterIfPlayerOn(lane);
     }
-    // ===== 비트(스텝) 기반 락 =====
+
     public void LockLaneBeats(int lane, int steps)
     {
+        lane = Mathf.Clamp(lane, 0, 2);
         if (steps <= 0) { UnlockLane(lane); return; }
 
-        // 기존 비트 락이 있으면 더 긴 쪽으로 유지
         if (_stepsRemain.TryGetValue(lane, out int cur))
             _stepsRemain[lane] = Mathf.Max(cur, steps);
         else
             _stepsRemain[lane] = steps;
 
-        // 초 기반과 병행 가능: IsLocked는 둘 중 하나라도 잠그면 true
         OnLaneLockChanged?.Invoke(lane, true, GetRemain(lane));
-
         TryForceCenterIfPlayerOn(lane);
-        EnsureBeatListening(true); // 비트 이벤트 구독 시작/유지
-    }
-    // Beat 이벤트 수신 등록/해제
-    void EnsureBeatListening(bool forceOn = false)
-    {
-        bool need = forceOn || _stepsRemain.Count > 0;
-        if (need && !_listeningBeats)
-        {
-            BeatManager.OnBeat += OnBeatTick;
-            _listeningBeats = true;
-        }
-        else if (!need && _listeningBeats)
-        {
-            BeatManager.OnBeat -= OnBeatTick;
-            _listeningBeats = false;
-        }
-    }
-    void OnBeatTick()
-    {
-        if (_stepsRemain.Count == 0) { EnsureBeatListening(false); return; }
-
-        var lanes = new List<int>(_stepsRemain.Keys);
-        foreach (var lane in lanes)
-        {
-            _stepsRemain[lane]--;
-            if (_stepsRemain[lane] <= 0)
-            {
-                _stepsRemain.Remove(lane);
-                // 비트 락이 풀려도 초 기반 남아있을 수 있으니 UnlockLane 호출 대신 상태 갱신
-                if (!IsLocked(lane))
-                {
-                    unlockTimes[lane] = 0f;
-                    OnLaneLockChanged?.Invoke(lane, false, 0);
-                    // 자동 복귀가 필요하면 여기서 호출:
-                    // TryReturnToLaneIfCenter(lane);
-                }
-                else
-                {
-                    // 아직 초 기반으로 잠겨있다면 남은 초 알림
-                    OnLaneLockChanged?.Invoke(lane, true, GetRemain(lane));
-                }
-            }
-            else
-            {
-                OnLaneLockChanged?.Invoke(lane, true, GetRemain(lane));
-            }
-        }
-
-        if (_stepsRemain.Count == 0) EnsureBeatListening(false);
+        EnsureBeatListening(true);
     }
 
     public void UnlockLane(int lane)
     {
+        lane = Mathf.Clamp(lane, 0, 2);
         bool wasLocked = IsLocked(lane);
 
         unlockTimes[lane] = 0f;
@@ -186,35 +141,72 @@ public class LaneLockManager : MonoBehaviour
 
     public float GetRemain(int lane)
     {
+        lane = Mathf.Clamp(lane, 0, 2);
         float secRemain = Mathf.Max(0, unlockTimes[lane] - Time.time);
-
         if (_stepsRemain.TryGetValue(lane, out int steps) && steps > 0)
             secRemain = Mathf.Max(secRemain, steps * GetOneBeatSeconds());
-
         return secRemain;
     }
-    void TryForceCenterIfPlayerOn(int lockedLane)
+
+    // ===== 내부 유틸 =====
+    void EnsureBeatListening(bool forceOn = false)
     {
-        if (!forceCenterWhenLocked) return;
-        if (!playerTransform) return;
-        if (laneAnchors == null || laneAnchors.Length < 3) return;
-
-        int current = GetNearestLaneIndex(playerTransform.position);
-        if (current != lockedLane) return; // 봉인된 레인에 서 있지 않으면 스킵
-
-        var center = laneAnchors[Mathf.Clamp(centerLaneIndex, 0, 2)];
-        if (center)
+        bool need = forceOn || _stepsRemain.Count > 0;
+        if (need && !_listeningBeats)
         {
-            playerTransform.position = new Vector3(
-                center.position.x,
-                playerTransform.position.y,
-                playerTransform.position.z
-            );
-            if (syncPosIndexViaReflection) SetPlayerPosIndex(centerLaneIndex);
+            BeatManager.OnBeat += OnBeatTick; // BeatManager는 static event
+            _listeningBeats = true;
+        }
+        else if (!need && _listeningBeats)
+        {
+            BeatManager.OnBeat -= OnBeatTick;
+            _listeningBeats = false;
+        }
+    }
 
+    void OnBeatTick()
+    {
+        if (_stepsRemain.Count == 0) { EnsureBeatListening(false); return; }
+
+        var lanes = new List<int>(_stepsRemain.Keys);
+        foreach (var lane in lanes)
+        {
+            _stepsRemain[lane]--;
+            if (_stepsRemain[lane] <= 0)
+            {
+                _stepsRemain.Remove(lane);
+                if (!IsLocked(lane))
+                {
+                    unlockTimes[lane] = 0f;
+                    OnLaneLockChanged?.Invoke(lane, false, 0);
+                }
+                else
+                {
+                    OnLaneLockChanged?.Invoke(lane, true, GetRemain(lane));
+                }
+            }
+            else
+            {
+                OnLaneLockChanged?.Invoke(lane, true, GetRemain(lane));
+            }
         }
 
-        // 1비트 무적
+        if (_stepsRemain.Count == 0) EnsureBeatListening(false);
+    }
+
+    void TryForceCenterIfPlayerOn(int lockedLane)
+    {
+        if (!forceCenterWhenLocked || !playerTransform || laneAnchors == null || laneAnchors.Length < 3) return;
+
+        int current = GetNearestLaneIndex(playerTransform.position);
+        if (current != lockedLane) return;
+
+        var center = laneAnchors[Mathf.Clamp(centerLaneIndex, 0, 2)];
+        if (!center) return;
+
+        playerTransform.position = new Vector3(center.position.x, playerTransform.position.y, playerTransform.position.z);
+        if (syncPosIndexViaReflection) SetPlayerPosIndex(centerLaneIndex);
+
         if (grantIFramesForOneBeat)
         {
             float beatSec = GetOneBeatSeconds();
@@ -222,36 +214,16 @@ public class LaneLockManager : MonoBehaviour
             StartCoroutine(Co_IFrames(beatSec));
         }
     }
-    void TryReturnToLaneIfCenter(int targetLane)
-    {
-        if (!playerTransform) return;
-        if (laneAnchors == null || laneAnchors.Length < 3) return;
-
-        int cur = GetNearestLaneIndex(playerTransform.position);
-        if (cur != centerLaneIndex) return; // 중앙에 있을 때만 자동 복귀
-
-        var anchor = laneAnchors[Mathf.Clamp(targetLane, 0, 2)];
-        if (!anchor) return;
-
-        // 즉시 스냅(원하면 트윈)
-        playerTransform.position = new Vector3(
-            anchor.position.x,
-            playerTransform.position.y,
-            playerTransform.position.z
-        );
-
-        // ★ posIndex를 '복귀 레인'으로 동기화
-        if (syncPosIndexViaReflection) SetPlayerPosIndex(targetLane);
-    }
 
     int GetNearestLaneIndex(Vector3 pos)
     {
-        int best = 0;
-        float bestDist = Mathf.Infinity;
+        if (laneAnchors == null || laneAnchors.Length < 3) return 1;
+        int best = 0; float bestDist = Mathf.Infinity;
         for (int i = 0; i < laneAnchors.Length; i++)
         {
-            if (!laneAnchors[i]) continue;
-            float d = (pos - laneAnchors[i].position).sqrMagnitude;
+            var a = laneAnchors[i];
+            if (!a) continue;
+            float d = (pos - a.position).sqrMagnitude;
             if (d < bestDist) { bestDist = d; best = i; }
         }
         return best;
@@ -259,20 +231,12 @@ public class LaneLockManager : MonoBehaviour
 
     float GetOneBeatSeconds()
     {
-        // 프로젝트에 BeatState 자동 사용
+        // BeatManager에 GetBeatDurationSec()가 있으므로 우선 사용
         try
         {
-            var beatState = BeatState.Instance;
-            var prop = beatState.GetType().GetProperty("SecondsPerBeat", BindingFlags.Public | BindingFlags.Instance);
-            if (prop != null)
-            {
-                var v = prop.GetValue(beatState, null);
-                if (v is float f && f > 0f) return f;
-                if (v is double d && d > 0.0) return (float)d;
-            }
+            if (BeatManager.Instance) return Mathf.Max(0.05f, BeatManager.Instance.GetBeatDurationSec());
         }
-        catch { /* 무시하고 폴백 사용 */ }
-
+        catch { /* ignore */ }
         return Mathf.Max(0.05f, fallbackBeatSeconds);
     }
 
@@ -287,22 +251,20 @@ public class LaneLockManager : MonoBehaviour
     {
         try { StopCoroutine(routineName); } catch { }
     }
+
     void SetPlayerPosIndex(int newIndex)
     {
         if (!playerTransform) return;
-        var pi = playerTransform.GetComponent<PlayerInput>();
+        var pi = playerTransform.GetComponent<PlayerInput>(); // 당신 프로젝트의 PlayerInput
         if (!pi) return;
 
-        // private int posIndex 를 리플렉션으로 갱신
-        var f = typeof(PlayerInput).GetField(posIndexFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+        var f = typeof(PlayerInput).GetField(posIndexFieldName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         if (f != null && f.FieldType == typeof(int))
-        {
             f.SetValue(pi, Mathf.Clamp(newIndex, 0, 2));
-        }
     }
+
     void OnDestroy()
     {
-        if (_listeningBeats)
-            BeatManager.OnBeat -= OnBeatTick;
+        if (_listeningBeats) BeatManager.OnBeat -= OnBeatTick;
     }
 }
