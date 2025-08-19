@@ -10,6 +10,9 @@ public class LaneLockManager : MonoBehaviour
     [Tooltip("봉인된 레인에 플레이어가 서 있으면 중앙 레인으로 강제 이동")]
     public bool forceCenterWhenLocked = true;
 
+    [Tooltip("락이 유지되는 동안, 봉인된 레인 위에 서 있으면 매 프레임 중앙으로 보냄")]
+    public bool enforceWhileLocked = true;
+
     [Tooltip("강제 이동 대상 플레이어")]
     public Transform playerTransform;
 
@@ -44,7 +47,49 @@ public class LaneLockManager : MonoBehaviour
         if (Instance && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
+    void Update() // NEW
+    {
+        if (!enforceWhileLocked) return;
+        if (!forceCenterWhenLocked) return;
+        if (!playerTransform) return;
+        if (laneAnchors == null || laneAnchors.Length < 3) return;
 
+        // 현재 플레이어가 서 있는 레인 계산
+        int cur = GetNearestLaneIndex(playerTransform.position);
+        if (cur < 0 || cur >= laneAnchors.Length) return;
+
+        // 그 레인이 봉인 중이면 중앙으로 스냅
+        if (IsLocked(cur))
+        {
+            int dest = Mathf.Clamp(centerLaneIndex, 0, 2);
+
+            // 중앙 앵커 없으면 중단
+            var center = laneAnchors[dest];
+            if (!center) return;
+
+            // 이미 충분히 가까우면 스킵(소수 떨림 방지)
+            const float eps = 0.01f;
+            if (Mathf.Abs(playerTransform.position.x - center.position.x) <= eps) return;
+
+            // 스냅 이동 (트윈 사용 안 함)
+            playerTransform.position = new Vector3(
+                center.position.x,
+                playerTransform.position.y,
+                playerTransform.position.z
+            );
+
+            // posIndex 동기화
+            if (syncPosIndexViaReflection) SetPlayerPosIndex(dest);
+
+            // 무적 1비트
+            if (grantIFramesForOneBeat)
+            {
+                float beatSec = GetOneBeatSeconds();
+                StopCoroutineSafe(nameof(Co_IFrames));
+                StartCoroutine(Co_IFrames(beatSec));
+            }
+        }
+    }
     public bool IsLocked(int lane)
     {
         if (Time.time < unlockTimes[lane]) return true;         // 초 기반
