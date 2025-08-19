@@ -6,18 +6,21 @@ using TMPro;
 
 public class ScoreManager : MonoBehaviour
 {
-    public Image scoreBackgroundImage;
-    // 결과 창에 표시할 스코어 텍스트 추가
+    public GameObject scoreBackground;
+    public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI CounterScoreText;
+    public TextMeshProUGUI ClearText;
 
     public int maxScoreCount = 100;
-    private int currentScoreCount;
+    [SerializeField] private int currentScoreCount;
 
-    public int maxCounterScore = 100;
-    private int currentCounterScore;
+    public int maxCounterScore = 20;
+    [SerializeField] private int currentCounterScore;
 
     private void Start()
     {
         currentScoreCount = maxScoreCount;
+        currentCounterScore = maxCounterScore;
     }
 
     public void SubtractCurrentScoreCount()
@@ -32,13 +35,35 @@ public class ScoreManager : MonoBehaviour
 
     public string GetTotalScoreToString()
     {
-        float scoreValue = currentScoreCount / maxScoreCount;
-        string foratted00 = scoreValue.ToString("0.00");
-        return foratted00;
+        float scoreValue = (float)currentScoreCount / maxScoreCount * 100f;
+        string formatted00 = scoreValue.ToString("F2");
+        return formatted00;
+    }
+
+    public int GetTotalCounterScore()
+    {
+        return currentCounterScore;
     }
 
     public string GetCounterScoreToString()
     {
-        return "";
+        string formatted = currentCounterScore.ToString();
+        return formatted;
+    }
+
+    public void Ending()
+    {
+        BeatManager.Instance.StopMusicOnEnd();
+        scoreBackground.SetActive(true);
+
+        scoreText.text = "score : " + GetTotalScoreToString() + "%";
+        CounterScoreText.text = "counter : " + GetTotalCounterScore() + "/ " + maxCounterScore;
+
+        if (currentCounterScore >= maxCounterScore / 2)
+            ClearText.text = "클리어 성공!";
+        else
+            ClearText.text = "클리어 실패!";
+
+        Time.timeScale = 0f;
     }
 }

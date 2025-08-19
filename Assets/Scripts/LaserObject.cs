@@ -45,6 +45,7 @@ public class LaserObject : MonoBehaviour
 
     void OnEnable()
     {
+        scoreManager = GameObject.FindFirstObjectByType<ScoreManager>();
         // 경고 시작
         beatsRemaining = Mathf.Max(1, warningBeats);
         fired = false;

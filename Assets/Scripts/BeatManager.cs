@@ -84,6 +84,10 @@ public class BeatManager : MonoBehaviour
     private int _pendingOnBeats = 0;
     private int _pendingHalfBeats = 0;
 
+    [SerializeField] private ScoreManager _scoreManager;
+
+    private bool _musicFinished;
+
     [StructLayout(LayoutKind.Sequential)]
     struct TimelineBeatProperties
     {
@@ -149,7 +153,7 @@ public class BeatManager : MonoBehaviour
 
         // 콜백 등록 (tempo 추출/비트 적재)
         beatCallback = TimelineBeatCallback;
-        musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
+        musicInstance.setCallback(beatCallback, EVENT_CALLBACK_TYPE.TIMELINE_BEAT | EVENT_CALLBACK_TYPE.STOPPED);
 
         // 재생
         yield return new WaitForSeconds(2.0f);
@@ -364,7 +368,21 @@ public class BeatManager : MonoBehaviour
 
             Instance._sawAnyFmodBeat = true; // 실제 비트 수신 시작
         }
+
+        else if (type == EVENT_CALLBACK_TYPE.STOPPED)
+        {
+            if (Instance != null)
+            {
+                Instance._musicFinished = true;
+            }
+        }
+
         return FMOD.RESULT.OK;
+    }
+
+    public void StopMusicOnEnd()
+    {
+        musicInstance.stop(STOP_MODE.IMMEDIATE);
     }
 
     IEnumerator Co_FireOffBeatHalfStep()
