@@ -364,7 +364,8 @@ public class TutorialGameManager : MonoBehaviour
                 InitStepTimerIfNeeded(specialDuration);
                 break;
             case Step.Done:
-                SetUI("", ".", 0, hideCounter: true);
+                SetUI("", "", 0, hideCounter: true);
+                tutorialUIGroup?.SetActive(false);
                 break;
         }
 
