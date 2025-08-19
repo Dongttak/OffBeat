@@ -362,9 +362,21 @@ public class BeatManager : MonoBehaviour
         if (p == null) return;
         pulseTargets.Remove(p);
     }
+
     // 외부 판정용
     public bool IsOnBeatNow() => IsInZone(GetJudgeMs(), onBeatZones);
     public bool IsOffBeatNow() => IsInZone(GetJudgeMs(), offBeatZones);
+    public float GetEffectiveBpm()
+    {
+        float basis = (useFmodTempo && _lastTempoFromFmod > 0f) ? _lastTempoFromFmod : bpm;
+        return basis * currentSpeed;  // 피치/속도 반영
+    }
+
+    public float GetBeatDurationSec()
+    {
+        float bpmEff = GetEffectiveBpm();
+        return 60f / Mathf.Max(1e-4f, bpmEff);
+    }
     // BeatManager.cs 내부
     public void SetMusicPaused(bool paused)
     {

@@ -34,6 +34,8 @@ public class PlayerInput : MonoBehaviour
     [SerializeField] private bool bufferCounter = false; // 기본 false: 카운터 버퍼링 안 함
     private int posIndex = 1;
 
+    //차 패턴
+    public int CurrentLaneIndex => posIndex;
     // 창 상태
     private bool onOpen, offOpen;
     private bool onConsumed, offConsumed;

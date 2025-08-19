@@ -36,6 +36,36 @@ public class PatternScheduler : MonoBehaviour
     public List<EventEntry> offBeatEvents = new();
     public List<CounterEntry> offBeatCounters = new();
 
+    [Header("Animator Triggers (OnBeat)")]
+    public List<AnimatorTriggerEntry> onBeatAnimator = new();
+    [Header("Animator Triggers (OffBeat)")]
+    public List<AnimatorTriggerEntry> offBeatAnimator = new();
+
+    [Header("Pattern2 Toggles (OnBeat)")]
+    public List<Pattern2ToggleEntry> onBeatPattern2 = new();
+    [Header("Pattern2 Toggles (OffBeat)")]
+    public List<Pattern2ToggleEntry> offBeatPattern2 = new();
+
+    [Serializable]
+    public class AnimatorTriggerEntry : TimelineEntryBase
+    {
+        [Header("Animator Trigger")]
+        public Animator animator;
+        public string trigger;
+    }
+
+    [Serializable]
+    public class Pattern2ToggleEntry : TimelineEntryBase
+    {
+        [Header("Pattern2 Toggle")]
+        [Tooltip("토글할 차량 오브젝트 (Pattern2CarCharger 프리팹 등)")]
+        public GameObject car;
+
+        [Tooltip("true = 활성화 / false = 비활성화")]
+        public bool enable = true;
+    }
+
+
     // 내부 카운터
     private int _onBeatIndex = -1;     // 첫 OnBeat 때 0으로 시작하도록 -1로
     private int _offBeatIndex = -1;
@@ -70,12 +100,15 @@ public class PatternScheduler : MonoBehaviour
 
     // ───────────────────────── 핸들러
 
+    // HandleOnBeat/HandleOffBeat 안에서 실행 추가
     private void HandleOnBeat()
     {
         _onBeatIndex++;
         ExecuteSpawns(onBeatSpawns, _onBeatIndex);
         ExecuteEvents(onBeatEvents, _onBeatIndex);
         ExecuteCounters(onBeatCounters, _onBeatIndex);
+        ExecuteAnimator(onBeatAnimator, _onBeatIndex);
+        ExecutePattern2(onBeatPattern2, _onBeatIndex);
     }
 
     private void HandleOffBeat()
@@ -84,7 +117,10 @@ public class PatternScheduler : MonoBehaviour
         ExecuteSpawns(offBeatSpawns, _offBeatIndex);
         ExecuteEvents(offBeatEvents, _offBeatIndex);
         ExecuteCounters(offBeatCounters, _offBeatIndex);
+        ExecuteAnimator(offBeatAnimator, _offBeatIndex);
+        ExecutePattern2(offBeatPattern2, _offBeatIndex);
     }
+
 
     // ───────────────────────── 실행기들
 
@@ -130,32 +166,59 @@ public class PatternScheduler : MonoBehaviour
                 counterManager.OpenWindow(e.windowSeconds > 0f ? e.windowSeconds : counterManager.WindowDuration);
         }
     }
+    // 실행부
+    private void ExecuteAnimator(List<AnimatorTriggerEntry> list, int beat)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            var e = list[i];
+            if (e.Match(beat, beatsPerMeasure))
+                if (e.animator && !string.IsNullOrEmpty(e.trigger))
+                    e.animator.SetTrigger(e.trigger);
+        }
+    }
+    private void ExecutePattern2(List<Pattern2ToggleEntry> list, int beat)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            var e = list[i];
+            if (e.Match(beat, beatsPerMeasure) && e.car)
+                e.car.SetActive(e.enable);
+        }
+    }
 
     // ───────────────────────── 데이터 구조
 
+    // ── TimelineEntryBase에 “반복/시작 지연” 옵션 추가 ──
     [Serializable]
     public abstract class TimelineEntryBase
     {
         [Header("Beat Address")]
-        [Tooltip("절대 비트 인덱스(0,1,2,...) 또는 마디:박 ('4:1' = 4마디 1박). 둘 중 하나만 사용.")]
         public int beatIndex = -1;
-
-        [Tooltip("마디:박 표기 (예: \"4:1\"). 위 beatIndex보다 우선 적용됨.")]
         public string measureBeat = "";
 
-        /// <summary>현재 타임라인 카운터(0부터)에 매치되는지 확인</summary>
+        [Header("Repeat (옵션)")]
+        [Tooltip(">=1이면 ‘firstBeat’부터 everyN 박마다 실행")]
+        public int everyN = 0;
+        [Tooltip("반복 시작 오프셋(절대 비트 인덱스). 0이면 첫 실행이 0비트")]
+        public int firstBeat = 0;
+
         public bool Match(int currentBeat, int beatsPerMeasure)
         {
             int target = ResolveBeatIndex(beatsPerMeasure);
-            return currentBeat == target;
+
+            // 단일 지점 지정(기존 동작)
+            if (everyN <= 0) return currentBeat == target;
+
+            // 반복 실행: currentBeat가 firstBeat 이후이며 everyN 배수인 경우
+            if (currentBeat < firstBeat) return false;
+            return (currentBeat - firstBeat) % everyN == 0;
         }
 
-        /// <summary>measureBeat가 유효하면 그걸 사용, 아니면 beatIndex 사용</summary>
         public int ResolveBeatIndex(int bpmBeatsPerMeasure)
         {
             if (!string.IsNullOrWhiteSpace(measureBeat))
             {
-                // "M:B" → (M-1)*beatsPerMeasure + (B-1)
                 if (TryParseMeasureBeat(measureBeat, bpmBeatsPerMeasure, out int idx))
                     return idx;
             }
@@ -166,15 +229,12 @@ public class PatternScheduler : MonoBehaviour
         {
             resultIndex = 0;
             if (string.IsNullOrWhiteSpace(s)) return false;
-
             var parts = s.Split(':');
             if (parts.Length != 2) return false;
             if (!int.TryParse(parts[0], out int measure)) return false;
             if (!int.TryParse(parts[1], out int beat)) return false;
-
             measure = Mathf.Max(1, measure);
             beat = Mathf.Max(1, beat);
-
             resultIndex = (measure - 1) * beatsPerMeasure + (beat - 1);
             return true;
         }
