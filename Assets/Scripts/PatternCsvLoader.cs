@@ -21,6 +21,7 @@ public class PatternCsvLoader : MonoBehaviour
 
     void Awake()
     {
+        csvFile = Resources.Load<TextAsset>("PatternCsv");
         if (!target) target = GetComponent<PatternTimeline>();
         if (csvFile) LoadCsvToTimeline(csvFile, target);
     }

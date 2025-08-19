@@ -2687,65 +2687,7 @@ MonoBehaviour:
   spawnParent: {fileID: 0}
   counterManager: {fileID: 1113954334}
   beatsPerMeasure: 4
-  steps:
-  - when: 1
-    stepIndex: 4
-    measureBeat: 
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    lane: 0
-    localOffset: {x: 0, y: 0, z: 4}
-    spawns: []
-    toggles: []
-    animators: []
-    animatorTrigger: 
-    counters: []
-    events: []
-  - when: 0
-    stepIndex: 8
-    measureBeat: 
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    lane: 2
-    localOffset: {x: 0, y: 0, z: 4}
-    spawns: []
-    toggles: []
-    animators: []
-    animatorTrigger: 
-    counters: []
-    events: []
-  - when: 0
-    stepIndex: 2
-    measureBeat: 
-    prefab: {fileID: 0}
-    lane: 1
-    localOffset: {x: 0, y: 0, z: 4}
-    spawns:
-    - prefab: {fileID: 0}
-      lane: 1
-      point: {fileID: 0}
-      offset: {x: 0, y: 0, z: 16}
-      autoDestroyAfter: 5
-      usePool: 0
-    toggles: []
-    animators:
-    - {fileID: 0}
-    animatorTrigger: 
-    counters: []
-    events: []
-  - when: 1
-    stepIndex: 14
-    measureBeat: 
-    prefab: {fileID: 0}
-    lane: 0
-    localOffset: {x: 0, y: 0, z: 4}
-    spawns: []
-    toggles: []
-    animators: []
-    animatorTrigger: 
-    counters:
-    - openAsHint: 1
-      leadSeconds: 0
-      windowSeconds: 0
-    events: []
+  steps: []
 --- !u!114 &1566788877
 MonoBehaviour:
   m_ObjectHideFlags: 0
