@@ -35,6 +35,9 @@ public class BeatManager : MonoBehaviour
     [Tooltip("FMOD 콜백에서 내려주는 tempo를 쓸지 여부. 끄면 위의 bpm 고정")]
     [SerializeField] private bool useFmodTempo = false;
 
+    [Header("시작 딜레이")]
+    [SerializeField] private int delayTime = 2;    // 페이드인 시간 동안 박자 판정 딜레이, 정박/엇박 구간도 (기존 + delayTime)
+
     // 판정에도 같은 오프셋을 쓸지(권장: true)
     [SerializeField] private bool applyVisualOffsetToJudge = true;
 
@@ -194,11 +197,11 @@ public class BeatManager : MonoBehaviour
         offBeatZones.Clear();
 
         for (int t = 0; t <= songLenMs; t += intervalMs)
-            onBeatZones.Add(new JudgeZone { startMs = t - hitRangeMs, endMs = t + hitRangeMs });
+            onBeatZones.Add(new JudgeZone { startMs = (t + delayTime) - hitRangeMs, endMs = (t + delayTime) + hitRangeMs });
 
         int offset = intervalMs / 2;
         for (int t = offset; t <= songLenMs; t += intervalMs)
-            offBeatZones.Add(new JudgeZone { startMs = t - hitRangeMs, endMs = t + hitRangeMs });
+            offBeatZones.Add(new JudgeZone { startMs = (t + delayTime) - hitRangeMs, endMs = (t + delayTime) + hitRangeMs });
     }
 
     void Update()
