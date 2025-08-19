@@ -4938,7 +4938,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1163535285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4956,20 +4956,8 @@ MonoBehaviour:
     lane: 0
     prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
     localOffset: {x: 0, y: 0, z: 4}
-  - stepIndex: 0
+  - stepIndex: 8
     lane: 2
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
-  - stepIndex: 0
-    lane: 0
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
-  - stepIndex: 0
-    lane: 2
-    prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
-    localOffset: {x: 0, y: 0, z: 4}
-  - stepIndex: 0
-    lane: 0
     prefab: {fileID: 3477021349890465720, guid: bca8631b2eddb9740bf4d901f81f0475, type: 3}
     localOffset: {x: 0, y: 0, z: 4}
   laneAnchors:

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 
 public class LaneLockManager : MonoBehaviour
@@ -33,7 +34,9 @@ public class LaneLockManager : MonoBehaviour
     public static LaneLockManager Instance { get; private set; }
 
     private float[] unlockTimes = new float[3] { 0, 0, 0 };
-
+    // 비트(스텝) 기반 락 남은 스텝
+    private readonly Dictionary<int, int> _stepsRemain = new();
+    private bool _listeningBeats = false;
     public event Action<int, bool, float> OnLaneLockChanged;
 
     private void Awake()
@@ -44,7 +47,9 @@ public class LaneLockManager : MonoBehaviour
 
     public bool IsLocked(int lane)
     {
-        return Time.time < unlockTimes[lane];
+        if (Time.time < unlockTimes[lane]) return true;         // 초 기반
+        if (_stepsRemain.TryGetValue(lane, out int steps) && steps > 0) return true; // 비트 기반
+        return false;
     }
 
     public void LockLane(int lane, float duration)
@@ -54,17 +59,94 @@ public class LaneLockManager : MonoBehaviour
         OnLaneLockChanged?.Invoke(lane, true, until - Time.time);
         TryForceCenterIfPlayerOn(lane);
     }
+    // ===== 비트(스텝) 기반 락 =====
+    public void LockLaneBeats(int lane, int steps)
+    {
+        if (steps <= 0) { UnlockLane(lane); return; }
+
+        // 기존 비트 락이 있으면 더 긴 쪽으로 유지
+        if (_stepsRemain.TryGetValue(lane, out int cur))
+            _stepsRemain[lane] = Mathf.Max(cur, steps);
+        else
+            _stepsRemain[lane] = steps;
+
+        // 초 기반과 병행 가능: IsLocked는 둘 중 하나라도 잠그면 true
+        OnLaneLockChanged?.Invoke(lane, true, GetRemain(lane));
+
+        TryForceCenterIfPlayerOn(lane);
+        EnsureBeatListening(true); // 비트 이벤트 구독 시작/유지
+    }
+    // Beat 이벤트 수신 등록/해제
+    void EnsureBeatListening(bool forceOn = false)
+    {
+        bool need = forceOn || _stepsRemain.Count > 0;
+        if (need && !_listeningBeats)
+        {
+            BeatManager.OnBeat += OnBeatTick;
+            _listeningBeats = true;
+        }
+        else if (!need && _listeningBeats)
+        {
+            BeatManager.OnBeat -= OnBeatTick;
+            _listeningBeats = false;
+        }
+    }
+    void OnBeatTick()
+    {
+        if (_stepsRemain.Count == 0) { EnsureBeatListening(false); return; }
+
+        var lanes = new List<int>(_stepsRemain.Keys);
+        foreach (var lane in lanes)
+        {
+            _stepsRemain[lane]--;
+            if (_stepsRemain[lane] <= 0)
+            {
+                _stepsRemain.Remove(lane);
+                // 비트 락이 풀려도 초 기반 남아있을 수 있으니 UnlockLane 호출 대신 상태 갱신
+                if (!IsLocked(lane))
+                {
+                    unlockTimes[lane] = 0f;
+                    OnLaneLockChanged?.Invoke(lane, false, 0);
+                    // 자동 복귀가 필요하면 여기서 호출:
+                    // TryReturnToLaneIfCenter(lane);
+                }
+                else
+                {
+                    // 아직 초 기반으로 잠겨있다면 남은 초 알림
+                    OnLaneLockChanged?.Invoke(lane, true, GetRemain(lane));
+                }
+            }
+            else
+            {
+                OnLaneLockChanged?.Invoke(lane, true, GetRemain(lane));
+            }
+        }
+
+        if (_stepsRemain.Count == 0) EnsureBeatListening(false);
+    }
 
     public void UnlockLane(int lane)
     {
         bool wasLocked = IsLocked(lane);
+
         unlockTimes[lane] = 0f;
-        if (wasLocked) OnLaneLockChanged?.Invoke(lane, false, 0);
+        _stepsRemain.Remove(lane);
+
+        if (wasLocked)
+            OnLaneLockChanged?.Invoke(lane, false, 0);
+
+        if (_stepsRemain.Count == 0)
+            EnsureBeatListening(false);
     }
 
     public float GetRemain(int lane)
     {
-        return Mathf.Max(0, unlockTimes[lane] - Time.time);
+        float secRemain = Mathf.Max(0, unlockTimes[lane] - Time.time);
+
+        if (_stepsRemain.TryGetValue(lane, out int steps) && steps > 0)
+            secRemain = Mathf.Max(secRemain, steps * GetOneBeatSeconds());
+
+        return secRemain;
     }
     void TryForceCenterIfPlayerOn(int lockedLane)
     {
@@ -172,5 +254,10 @@ public class LaneLockManager : MonoBehaviour
         {
             f.SetValue(pi, Mathf.Clamp(newIndex, 0, 2));
         }
+    }
+    void OnDestroy()
+    {
+        if (_listeningBeats)
+            BeatManager.OnBeat -= OnBeatTick;
     }
 }

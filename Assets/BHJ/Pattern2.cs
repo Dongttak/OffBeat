@@ -6,18 +6,31 @@ public class Pattern2 : MonoBehaviour, IHittable
     [Header("Lane")]
     [Range(0, 2)] public int laneIndex;   // 0:좌, 1:중, 2:우 (실제론 0/2만 사용)
 
-    [Header("Break Settings")]
-    public int hitsToBreak = 3;          
+    [Header("Hit Settings")]
+    [Tooltip("파괴 시 필요한 히트 수")]
+    public int hitsToBreak = 3;
+
+    [Header("Break Settings(Beat)")]
+    [Tooltip("초 대신 비트(스텝)로 봉인 타이머를 쓸지")]
+    public bool useBeatTimer = true;
+    [Tooltip("착지 후 N스텝 뒤 봉인 (스텝=BeatManager.stepsPerBeat 기준)")]
+    public int stepsToBlock = 8;
+    [Tooltip("봉인 유지시간을 비트로 쓸지 (초 대신)")]
+    public bool useBeatLockDuration = true;
+    [Tooltip("봉인 유지 스텝 수 (useBeatLockDuration=true일 때만 사용)")]
+    public int lockStepsDuration = 16; // 예: 4마디면 16 (4/4, stepsPerBeat=1 기준)F
+
+    [Header("Break Settings(time)")]
     public float timeToBlock = 4.0f;     // 유예시간(착지 후부터 계산)
-    public float lockDuration = 4.0f;    
+    public float lockDuration = 4.0f;
 
     [Header("Spawn Fall (낙하 연출)")]
     public float spawnFromHeight = 6f;    // 위에서 얼마나 떨어질지
     public float fallDuration = 0.5f;     // 요청대로 0.5초
-    public AnimationCurve fallCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public AnimationCurve fallCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     public ParticleSystem landingVFX;     // 착지 먼지 등(선택)
     public AudioClip landingSfx;          // 착지 소리(선택)
-    [Range(0,1)] public float landingSfxVolume = 0.9f;
+    [Range(0, 1)] public float landingSfxVolume = 0.9f;
 
     [Header("Visual")]
     public Renderer colorRenderer;
@@ -40,13 +53,15 @@ public class Pattern2 : MonoBehaviour, IHittable
     bool _blocked;
     bool _destroyed;
     bool _landed; // 착지 여부
+    bool _waitingBeatBlock;     // 비트 타이머 진행중 여부
+    int _stepsSinceLand;       // 착지 이후 지난 스텝 수
     MaterialPropertyBlock _mpb;
     Collider[] _colliders;
 
     void Awake()
     {
         if (!colorRenderer) colorRenderer = GetComponentInChildren<Renderer>();
-        _colliders = GetComponentsInChildren<Collider>(includeInactive:true);
+        _colliders = GetComponentsInChildren<Collider>(includeInactive: true);
         _mpb = new MaterialPropertyBlock();
     }
 
@@ -89,9 +104,46 @@ public class Pattern2 : MonoBehaviour, IHittable
         SetCollidersEnabled(true);
 
         // "착지한 시점"부터 유예 타이머 시작
-        if (timeToBlock > 0f) Invoke(nameof(ApplyBlockIfAlive), timeToBlock);
+        if (useBeatTimer)
+            StartBeatBlockTimer();
+        else if (timeToBlock > 0f)
+            Invoke(nameof(ApplyBlockIfAlive), timeToBlock);
+    }
+    void StartBeatBlockTimer()
+    {
+        var bm = BeatManager.Instance;
+        if (bm != null && bm.IsInitialized)
+        {
+            if (stepsToBlock <= 0) { ApplyBlockIfAlive(); return; }
+            _stepsSinceLand = 0;
+            _waitingBeatBlock = true;
+            BeatManager.OnBeat += OnBeatForBlock;
+        }
+        else
+        {
+            // 폴백: 비트 매니저 준비 전이면 초 기반 사용
+            if (timeToBlock > 0f) Invoke(nameof(ApplyBlockIfAlive), timeToBlock);
+        }
+    }
+    void StopBeatBlockTimer()
+    {
+        if (_waitingBeatBlock)
+        {
+            _waitingBeatBlock = false;
+            BeatManager.OnBeat -= OnBeatForBlock;
+        }
     }
 
+    void OnBeatForBlock()
+    {
+        if (!_waitingBeatBlock || _destroyed) return;
+        _stepsSinceLand++;
+        if (_stepsSinceLand >= stepsToBlock)
+        {
+            StopBeatBlockTimer();
+            ApplyBlockIfAlive();
+        }
+    }
     void SetCollidersEnabled(bool on)
     {
         if (_colliders == null) return;
@@ -104,7 +156,14 @@ public class Pattern2 : MonoBehaviour, IHittable
         if (_hits < hitsToBreak && !_blocked)
         {
             _blocked = true;
-            LaneLockManager.Instance?.LockLane(laneIndex, lockDuration);
+            if (useBeatLockDuration)
+            {
+                LaneLockManager.Instance?.LockLaneBeats(laneIndex, Mathf.Max(1, lockStepsDuration));
+            }
+            else
+            {
+                LaneLockManager.Instance?.LockLane(laneIndex, lockDuration);
+            }
             PlayTimeoutVFXThenVanish();
         }
     }
@@ -127,6 +186,7 @@ public class Pattern2 : MonoBehaviour, IHittable
         {
             _destroyed = true;
             CancelInvoke(nameof(ApplyBlockIfAlive));
+            StopBeatBlockTimer();
             PlaySuccessVFXThenVanish();
         }
     }
@@ -178,5 +238,10 @@ public class Pattern2 : MonoBehaviour, IHittable
         else
             _mpb.SetColor("_Color", c);      // Built-in
         colorRenderer.SetPropertyBlock(_mpb);
+    }
+    void OnDestroy()
+    {
+        StopBeatBlockTimer();
+        CancelInvoke();
     }
 }
