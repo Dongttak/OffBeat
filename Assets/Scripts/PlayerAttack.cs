@@ -28,8 +28,6 @@ public class PlayerAttack : MonoBehaviour
                 var rend = hit.transform.GetComponent<Renderer>();
                 if (flashOnHit && rend && rend.material && rend.material.HasProperty("_Color"))
                     StartCoroutine(Flash(rend));
-
-           
             }
         }
         else
