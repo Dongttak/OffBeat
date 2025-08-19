@@ -92,7 +92,11 @@ public class LaserObject : MonoBehaviour
 
         // 로컬 forward 기준
         Vector3 origin = transform.position + Vector3.up;
-        Vector3 dir = transform.forward;
+        Vector3 dir = Vector3.back;
+
+        // 발광 이펙트 짧게
+        yield return new WaitForSeconds(0.1f);
+        if (laserEffect) laserEffect.SetActive(false);
 
         if (Physics.Raycast(origin, dir, out RaycastHit hit, rayDistance, playerMask))
         {
@@ -102,10 +106,6 @@ public class LaserObject : MonoBehaviour
                 Debug.Log("Player Hit by Laser!");
             }
         }
-
-        // 발광 이펙트 짧게
-        yield return new WaitForSeconds(0.1f);
-        if (laserEffect) laserEffect.SetActive(false);
 
         // (옵션) FMOD 재생 종료까지 대기
         if (waitForSfxEnd)
